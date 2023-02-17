@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import Tool from "./tool";
-import { Dispatch, SetStateAction } from "react";
+import { useEffect, Dispatch, SetStateAction } from "react";
 
 interface Props {
     tool: "select" | "move" | "bounding";
@@ -34,6 +34,18 @@ const StyledLine = styled.div`
 `;
 
 function LeftBar({ tool, setTool, setIsReset }: Props) {
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.code === "KeyV") setTool("select");
+            if (e.code === "KeyM") setTool("move");
+            if (e.code === "KeyB") setTool("bounding");
+            if (e.shiftKey && e.code === "Digit1") setIsReset(true);
+        };
+        document.addEventListener("keydown", handleKeyDown);
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [setTool, setIsReset]);
     return (
         <StyledWrap>
             <div>
