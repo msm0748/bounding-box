@@ -11,4 +11,10 @@ interface IElements {
     cY: number;
 }
 
-export type { ICanvasSize, IElements };
+interface ISelectedElement extends IElements {
+    position?: string | null;
+    startX?: number;
+    startY?: number;
+}
+
+export type { ICanvasSize, IElements, ISelectedElement };
