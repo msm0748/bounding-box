@@ -1,7 +1,8 @@
 import React from "react";
 import { useRef, useState, useEffect, useLayoutEffect, useCallback, Dispatch, SetStateAction } from "react";
 import styled from "styled-components";
-import { ICanvasSize, IElements, ISelectedElement } from "./index.type";
+import { ICanvasSize, IElements, ISelectedElement, Point } from "./index.type";
+import CanvasHandler from "./CanvasHandler";
 import test from "../../assets/images/test.jpg";
 
 interface Props {
@@ -10,17 +11,22 @@ interface Props {
     setElements: Dispatch<SetStateAction<IElements[]>>;
     selectedElement: ISelectedElement | null;
     setSelectedElement: Dispatch<SetStateAction<ISelectedElement | null>>;
+    isReset: boolean;
+    setIsReset: Dispatch<SetStateAction<boolean>>;
 }
 
 const StyledWrap = styled.div`
     position: relative;
     width: 100%;
+    background: gray;
 `;
 
-type Point = {
-    x: number;
-    y: number;
-};
+const StyledCanvas = styled.canvas`
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+`;
 
 function diffPoints(p1: Point, p2: Point) {
     return { x: p1.x - p2.x, y: p1.y - p2.y };
@@ -42,7 +48,7 @@ const MIN_SCALE = 0.1;
 const image = new Image();
 image.src = test;
 
-function Canvas({ tool, elements, setElements, selectedElement, setSelectedElement }: Props) {
+function Canvas({ tool, elements, setElements, selectedElement, setSelectedElement, isReset, setIsReset }: Props) {
     const wrapRef = useRef<HTMLDivElement>(null);
     const [canvasSize, setCanvasSize] = useState<ICanvasSize>({ width: 0, height: 0 });
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -50,20 +56,19 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
     const [scale, setScale] = useState<number>(1);
     const [offset, setOffset] = useState<Point>(ORIGIN);
     const [viewportTopLeft, setViewportTopLeft] = useState<Point>(ORIGIN);
-
     const [isImageMove, setIsImageMove] = useState<boolean>(false);
     const [isGrabbing, setIsGrabbing] = useState<boolean>(false);
-    // const isImageMoveRef = useRef<boolean>(false);
-    // const isGrabbingRef = useRef<boolean>(false);
-
     const mousePosRef = useRef<Point>(ORIGIN);
-    const isResetRef = useRef<boolean>(false);
     const lastMousePosRef = useRef<Point>(ORIGIN);
     const lastOffsetRef = useRef<Point>(ORIGIN);
+    const RESIZE_POINT = 9 / scale;
 
     useEffect(() => {
         if (!wrapRef.current) return;
         setCanvasSize({ width: wrapRef.current.offsetWidth, height: wrapRef.current.offsetHeight });
+        const canvas = canvasRef.current!;
+        const context = canvas.getContext("2d");
+        setCtx(context);
     }, []);
 
     // update last offset
@@ -71,29 +76,36 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
         lastOffsetRef.current = offset;
     }, [offset]);
 
+    useEffect(() => {
+        const handleResize = () => {
+            if (!wrapRef.current) return;
+            setCanvasSize({ width: wrapRef.current.offsetWidth, height: wrapRef.current.offsetHeight });
+        };
+
+        window.addEventListener("resize", handleResize);
+        return () => {
+            window.removeEventListener("resize", handleResize);
+        };
+    }, []);
+
     // reset
-    const reset = useCallback(
-        (ctx: CanvasRenderingContext2D) => {
-            if (ctx && !isResetRef.current) {
-                ctx.canvas.width = canvasSize.width;
-                ctx.canvas.height = canvasSize.height;
-                ctx.scale(1, 1);
-                setScale(1);
+    useEffect(() => {
+        if (!ctx) return;
+        if (isReset) {
+            ctx.canvas.width = canvasSize.width;
+            ctx.canvas.height = canvasSize.height;
 
-                // reset state and refs
-                setCtx(ctx);
-                setOffset(ORIGIN);
-                setViewportTopLeft(ORIGIN);
-                mousePosRef.current = ORIGIN;
-                lastOffsetRef.current = ORIGIN;
-                lastMousePosRef.current = ORIGIN;
+            ctx.scale(1, 1);
+            setScale(1);
 
-                // this thing is so multiple resets in a row don't clear canvas
-                isResetRef.current = true;
-            }
-        },
-        [canvasSize]
-    );
+            // reset state and refs
+            setOffset(ORIGIN);
+            setViewportTopLeft(ORIGIN);
+            mousePosRef.current = ORIGIN;
+            lastOffsetRef.current = ORIGIN;
+            lastMousePosRef.current = ORIGIN;
+        }
+    }, [ctx, canvasSize, isReset]);
 
     // functions for panning
 
@@ -109,7 +121,7 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
         }
     }, []);
 
-    const handleMouseDown = useCallback(
+    const handleZoomMouseDown = useCallback(
         (event: React.MouseEvent) => {
             const { offsetX, offsetY } = event.nativeEvent;
             lastMousePosRef.current = { x: offsetX, y: offsetY };
@@ -120,11 +132,10 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
         [isImageMove, tool]
     );
 
-    const handleMouseMove = useCallback(
+    const handleZoomMouseMove = useCallback(
         (event: React.MouseEvent) => {
             const { offsetX, offsetY } = event.nativeEvent;
             calculateMouse(event);
-            if (!ctx) return;
 
             if (isImageMove === true || tool === "move") {
                 if (!isGrabbing) return;
@@ -136,10 +147,10 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
                 setOffset((prevOffset) => addPoints(prevOffset, mouseDiff));
             }
         },
-        [ctx, calculateMouse, tool, isGrabbing, isImageMove]
+        [calculateMouse, tool, isGrabbing, isImageMove]
     );
 
-    const handleMouseUp = useCallback(() => {
+    const handleZoomMouseUp = useCallback(() => {
         if (isImageMove === true || tool === "move") {
             setIsGrabbing(false);
         }
@@ -171,22 +182,10 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
             } else {
                 setOffset((prev) => ({ x: prev.x - event.deltaX, y: prev.y - event.deltaY }));
             }
-            isResetRef.current = false;
+            setIsReset(false);
         },
-        [ctx, viewportTopLeft, scale, calculateMouse]
+        [ctx, viewportTopLeft, scale, calculateMouse, setIsReset]
     );
-
-    // setup canvas and set ctx
-    useLayoutEffect(() => {
-        if (canvasRef.current) {
-            // get new drawing ctx
-            const renderCtx = canvasRef.current.getContext("2d");
-
-            if (renderCtx) {
-                reset(renderCtx);
-            }
-        }
-    }, [reset, canvasSize]);
 
     // pan when offset or scale changes
     useLayoutEffect(() => {
@@ -194,25 +193,29 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
             const offsetDiff = scalePoint(diffPoints(offset, lastOffsetRef.current), scale);
             ctx.translate(offsetDiff.x, offsetDiff.y);
             setViewportTopLeft((prevVal) => diffPoints(prevVal, offsetDiff));
-            isResetRef.current = false;
+            setIsReset(false);
         }
-    }, [ctx, offset, scale]);
+    }, [ctx, offset, scale, setIsReset, canvasSize]);
+
+    const mouseCursorStyle = useCallback((name: string) => {
+        if (!wrapRef.current) return;
+        wrapRef.current.style.cursor = name;
+    }, []);
 
     //mouse cursor style
     useEffect(() => {
-        if (!wrapRef.current) return;
         if (tool === "move" || isImageMove === true) {
-            wrapRef.current.style.cursor = "grab";
+            mouseCursorStyle("grab");
             if (isGrabbing === true) {
-                wrapRef.current.style.cursor = "grabbing";
+                mouseCursorStyle("grabbing");
             }
         } else {
-            wrapRef.current.style.cursor = "default";
+            mouseCursorStyle("default");
         }
-    }, [tool, isImageMove, isGrabbing]);
+    }, [tool, isImageMove, isGrabbing, mouseCursorStyle]);
 
     // draw
-    useLayoutEffect(() => {
+    useEffect(() => {
         if (!ctx) return;
         // clear canvas but maintain transform
         const storedTransform = ctx.getTransform();
@@ -224,20 +227,34 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
         const imageHeight = (canvasSize.width * image.height) / image.width;
 
         ctx.drawImage(image, 0, (canvasSize.height - imageHeight) / 2, imageWidth, imageHeight);
-    }, [ctx, scale, offset, canvasSize]);
 
-    useEffect(() => {
-        const canvas = canvasRef.current!;
-        const preventDefault = (e: WheelEvent) => {
-            if (e.ctrlKey) {
-                e.preventDefault();
+        const resizePointRect = RESIZE_POINT + 3 / scale;
+        elements.forEach(({ id, sX, sY, cX, cY }) => {
+            const width = cX - sX;
+            const height = cY - sY;
+            ctx.strokeRect(sX, sY, width, height);
+            if (selectedElement) {
+                // 현재 선택중인 rect 색상 변경
+                if (id === selectedElement.id) {
+                    ctx.fillStyle = "white";
+
+                    if (tool === "select") {
+                        ctx.strokeRect(cX - resizePointRect / 2, sY - resizePointRect / 2, resizePointRect, resizePointRect);
+                        ctx.fillRect(cX - resizePointRect / 2, sY - resizePointRect / 2, resizePointRect, resizePointRect);
+
+                        ctx.strokeRect(sX - resizePointRect / 2, sY - resizePointRect / 2, resizePointRect, resizePointRect);
+                        ctx.fillRect(sX - resizePointRect / 2, sY - resizePointRect / 2, resizePointRect, resizePointRect);
+
+                        ctx.strokeRect(sX - resizePointRect / 2, cY - resizePointRect / 2, resizePointRect, resizePointRect);
+                        ctx.fillRect(sX - resizePointRect / 2, cY - resizePointRect / 2, resizePointRect, resizePointRect);
+
+                        ctx.strokeRect(cX - resizePointRect / 2, cY - resizePointRect / 2, resizePointRect, resizePointRect);
+                        ctx.fillRect(cX - resizePointRect / 2, cY - resizePointRect / 2, resizePointRect, resizePointRect);
+                    }
+                }
             }
-        };
-        canvas.addEventListener("wheel", preventDefault, { passive: false });
-        return () => {
-            canvas.removeEventListener("wheel", preventDefault);
-        };
-    }, []);
+        });
+    }, [ctx, scale, offset, canvasSize, elements, selectedElement, tool, RESIZE_POINT]);
 
     //image move
     useEffect(() => {
@@ -264,15 +281,24 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
 
     return (
         <StyledWrap ref={wrapRef}>
-            <canvas
-                ref={canvasRef}
-                width={canvasSize.width}
-                height={canvasSize.height}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onWheel={handleWheel}
-            ></canvas>
+            <StyledCanvas ref={canvasRef} width={canvasSize.width} height={canvasSize.height}></StyledCanvas>
+            <CanvasHandler
+                tool={tool}
+                canvasSize={canvasSize}
+                handleZoomMouseDown={handleZoomMouseDown}
+                handleZoomMouseMove={handleZoomMouseMove}
+                handleZoomMouseUp={handleZoomMouseUp}
+                handleWheel={handleWheel}
+                elements={elements}
+                setElements={setElements}
+                selectedElement={selectedElement}
+                setSelectedElement={setSelectedElement}
+                isImageMove={isImageMove}
+                mouseCursorStyle={mouseCursorStyle}
+                RESIZE_POINT={RESIZE_POINT}
+                viewportTopLeft={viewportTopLeft}
+                scale={scale}
+            ></CanvasHandler>
         </StyledWrap>
     );
 }

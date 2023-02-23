@@ -1,27 +1,33 @@
 import { useRef, useState, useEffect, useCallback, Dispatch, SetStateAction } from "react";
 import styled from "styled-components";
-import { ICanvasSize, IElements, ISelectedElement } from "./index.type";
+import { ICanvasSize, IElements, ISelectedElement, Point } from "./index.type";
 
 interface Props {
     tool: "select" | "move" | "bounding";
+    canvasSize: ICanvasSize;
     elements: IElements[];
     setElements: Dispatch<SetStateAction<IElements[]>>;
     selectedElement: ISelectedElement | null;
     setSelectedElement: Dispatch<SetStateAction<ISelectedElement | null>>;
+    handleWheel: (event: React.WheelEvent) => void;
+    handleZoomMouseDown: (event: React.MouseEvent) => void;
+    handleZoomMouseMove: (event: React.MouseEvent) => void;
+    handleZoomMouseUp: () => void;
+    isImageMove: boolean;
+    mouseCursorStyle: (name: string) => void;
+    RESIZE_POINT: number;
+    viewportTopLeft: Point;
+    scale: number;
 }
 
-const StyledWrap = styled.div`
-    position: relative;
-    width: 100%;
+const StyledCanvas = styled.canvas`
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 3;
 `;
 
-type Point = {
-    x: number;
-    y: number;
-};
-
 const ORIGIN = { x: 0, y: 0 };
-const RESIZE_POINT = 9;
 
 const createElement = (id: number, sX: number, sY: number, cX: number, cY: number) => {
     return { id, sX, sY, cX, cY };
@@ -114,18 +120,27 @@ const resizedCoordinates = (offsetX: number, offsetY: number, position: string, 
     }
 };
 
-function Canvas({ tool, elements, setElements, selectedElement, setSelectedElement }: Props) {
-    const wrapRef = useRef<HTMLDivElement>(null);
-    const [canvasSize, setCanvasSize] = useState<ICanvasSize>({ width: 0, height: 0 });
+function Canvas({
+    tool,
+    canvasSize,
+    elements,
+    setElements,
+    selectedElement,
+    setSelectedElement,
+    handleZoomMouseDown,
+    handleZoomMouseMove,
+    handleZoomMouseUp,
+    handleWheel,
+    isImageMove,
+    mouseCursorStyle,
+    RESIZE_POINT,
+    viewportTopLeft,
+    scale,
+}: Props) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
     const [action, setAction] = useState<"none" | "moving" | "drawing" | "resizing">("none");
     const mousePosRef = useRef<Point>(ORIGIN);
-
-    useEffect(() => {
-        if (!wrapRef.current) return;
-        setCanvasSize({ width: wrapRef.current.offsetWidth, height: wrapRef.current.offsetHeight });
-    }, []);
 
     useEffect(() => {
         if (!canvasRef.current) return;
@@ -138,56 +153,23 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
         setCtx(context);
     }, [canvasSize]);
 
-    const draw = useCallback(() => {
-        if (!ctx) return;
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        const resizePointRect = RESIZE_POINT + 3;
-        elements.forEach(({ id, sX, sY, cX, cY }) => {
-            const width = cX - sX;
-            const height = cY - sY;
-            ctx.strokeRect(sX, sY, width, height);
-            if (selectedElement) {
-                // 현재 선택중인 rect 색상 변경
-                if (id === selectedElement.id) {
-                    ctx.fillStyle = "white";
-
-                    if (tool === "select") {
-                        ctx.strokeRect(cX - resizePointRect / 2, sY - resizePointRect / 2, resizePointRect, resizePointRect);
-                        ctx.fillRect(cX - resizePointRect / 2, sY - resizePointRect / 2, resizePointRect, resizePointRect);
-
-                        ctx.strokeRect(sX - resizePointRect / 2, sY - resizePointRect / 2, resizePointRect, resizePointRect);
-                        ctx.fillRect(sX - resizePointRect / 2, sY - resizePointRect / 2, resizePointRect, resizePointRect);
-
-                        ctx.strokeRect(sX - resizePointRect / 2, cY - resizePointRect / 2, resizePointRect, resizePointRect);
-                        ctx.fillRect(sX - resizePointRect / 2, cY - resizePointRect / 2, resizePointRect, resizePointRect);
-
-                        ctx.strokeRect(cX - resizePointRect / 2, cY - resizePointRect / 2, resizePointRect, resizePointRect);
-                        ctx.fillRect(cX - resizePointRect / 2, cY - resizePointRect / 2, resizePointRect, resizePointRect);
-                    }
+    const nearPoint = useCallback(
+        (offsetX: number, offsetY: number, x: number, y: number, name: string, cX?: number, cY?: number) => {
+            if (cX && cY) {
+                switch (name) {
+                    case "t":
+                    case "b":
+                        return x < offsetX && cX > offsetX && Math.abs(offsetY - y) < RESIZE_POINT ? name : null;
+                    case "l":
+                    case "r":
+                        return y < offsetY && cY > offsetY && Math.abs(offsetX - x) < RESIZE_POINT ? name : null;
                 }
+            } else {
+                return Math.abs(offsetX - x) < RESIZE_POINT && Math.abs(offsetY - y) < RESIZE_POINT ? name : null;
             }
-        });
-    }, [ctx, tool, elements, selectedElement]);
-
-    //draw
-    useEffect(() => {
-        draw();
-    }, [draw]);
-
-    const nearPoint = useCallback((offsetX: number, offsetY: number, x: number, y: number, name: string, cX?: number, cY?: number) => {
-        if (cX && cY) {
-            switch (name) {
-                case "t":
-                case "b":
-                    return x < offsetX && cX > offsetX && Math.abs(offsetY - y) < RESIZE_POINT ? name : null;
-                case "l":
-                case "r":
-                    return y < offsetY && cY > offsetY && Math.abs(offsetX - x) < RESIZE_POINT ? name : null;
-            }
-        } else {
-            return Math.abs(offsetX - x) < RESIZE_POINT && Math.abs(offsetY - y) < RESIZE_POINT ? name : null;
-        }
-    }, []);
+        },
+        [RESIZE_POINT]
+    );
 
     const positionWithinElement = useCallback(
         (offsetX: number, offsetY: number, element: IElements) => {
@@ -215,8 +197,24 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
         [nearPoint, selectedElement]
     );
 
+    const getZoomPosition = useCallback(
+        (offsetX: number, offsetY: number) => {
+            const canvas = canvasRef.current!;
+            let zoomPosX = offsetX / scale + viewportTopLeft.x;
+            let zoomPosY = offsetY / scale + viewportTopLeft.y;
+            if (zoomPosX < 0) zoomPosX = 0;
+            if (zoomPosY < 0) zoomPosY = 0;
+            if (zoomPosX > canvas.width) zoomPosX = canvas.width;
+            if (zoomPosY > canvas.height) zoomPosY = canvas.height;
+            return { zoomPosX, zoomPosY };
+        },
+        [viewportTopLeft, scale]
+    );
+
     const getElementPosition = useCallback(
         (offsetX: number, offsetY: number) => {
+            const { zoomPosX, zoomPosY } = getZoomPosition(offsetX, offsetY);
+
             let elementsCopy = [...elements];
             if (selectedElement) {
                 // 현재 selectedElement가 있으면 1순위로 수정되게끔
@@ -225,17 +223,17 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
                 if (selectedElementCopy) {
                     elementsCopy = [selectedElementCopy, ...elementsCopy]; //
                     return elementsCopy
-                        .map((element) => ({ ...element, position: positionWithinElement(offsetX, offsetY, element) }))
+                        .map((element) => ({ ...element, position: positionWithinElement(zoomPosX, zoomPosY, element) }))
                         .find((element) => element.position !== null);
                 }
             }
 
             return elementsCopy
                 .reverse()
-                .map((element) => ({ ...element, position: positionWithinElement(offsetX, offsetY, element) }))
+                .map((element) => ({ ...element, position: positionWithinElement(zoomPosX, zoomPosY, element) }))
                 .find((element) => element.position !== null); // selectedElement 가 없으면 마지막 rect 값 가져옴
         },
-        [elements, selectedElement, positionWithinElement]
+        [elements, selectedElement, positionWithinElement, getZoomPosition]
     );
 
     const updateElement = useCallback(
@@ -250,44 +248,52 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
 
     const handleMouseDown = useCallback(
         (e: React.MouseEvent) => {
+            handleZoomMouseDown(e);
+            if (isImageMove) return;
             const { offsetX, offsetY } = e.nativeEvent;
             if (tool === "bounding") {
                 setAction("drawing");
                 if (action !== "none") return;
                 const id = +new Date();
-                const element = createElement(id, offsetX, offsetY, offsetX, offsetY);
+                const { zoomPosX, zoomPosY } = getZoomPosition(offsetX, offsetY);
+                const element = createElement(id, zoomPosX, zoomPosY, zoomPosX, zoomPosY);
                 setElements((prev) => [...prev, element]);
             } else if (tool === "select") {
                 const element = getElementPosition(offsetX, offsetY);
+                const { zoomPosX, zoomPosY } = getZoomPosition(offsetX, offsetY);
+
                 if (element) {
                     if (element.position === "inside") {
                         setAction("moving");
                     } else {
                         setAction("resizing");
                     }
-                    setSelectedElement({ ...element, startX: offsetX, startY: offsetY });
+                    setSelectedElement({ ...element, startX: zoomPosX, startY: zoomPosY });
                 } else {
                     setSelectedElement(null);
                 }
             }
         },
-        [tool, action, setElements, getElementPosition, setSelectedElement]
+        [tool, action, isImageMove, setElements, getElementPosition, setSelectedElement, handleZoomMouseDown, getZoomPosition]
     );
     const handleMouseMove = useCallback(
         (e: React.MouseEvent) => {
+            handleZoomMouseMove(e);
+            if (isImageMove) return;
             const { offsetX, offsetY } = e.nativeEvent;
             mousePosRef.current.x = offsetX;
             mousePosRef.current.y = offsetY;
             if (tool === "bounding") {
                 if (action === "drawing") {
+                    const { zoomPosX, zoomPosY } = getZoomPosition(offsetX, offsetY);
                     const index = elements.length - 1;
                     const { id, sX, sY } = elements[index];
-                    updateElement(id, sX, sY, offsetX, offsetY);
+                    updateElement(id, sX, sY, zoomPosX, zoomPosY);
                 }
             } else if (tool === "select") {
                 const element = getElementPosition(offsetX, offsetY);
                 if (action === "none") {
-                    canvasRef.current!.style.cursor = element ? cursorForPosition(element.position!) : "default";
+                    mouseCursorStyle(element ? cursorForPosition(element.position!) : "default");
                 }
 
                 if (action === "moving") {
@@ -295,14 +301,15 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
                     if (!selectedElement) return;
                     const { id, sX, sY, cX, cY, startX, startY } = selectedElement;
                     if (!(startX && startY)) return;
+                    const { zoomPosX, zoomPosY } = getZoomPosition(offsetX, offsetY);
 
                     const width = cX - sX;
                     const height = cY - sY;
 
                     const x = startX - sX;
                     const y = startY - sY;
-                    let newX = offsetX - x;
-                    let newY = offsetY - y;
+                    let newX = zoomPosX - x;
+                    let newY = zoomPosY - y;
                     //마우스 위치에서 부터 자연스럽게 이동
 
                     if (newX < 0) newX = 0;
@@ -316,24 +323,28 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
                     if (!selectedElement) return;
                     const { position, startX, startY, ...coordinates } = selectedElement;
                     const { id } = selectedElement;
+                    const { zoomPosX, zoomPosY } = getZoomPosition(offsetX, offsetY);
 
                     if (!position) return;
                     if (!(startX && startY)) return;
-                    const { sX, sY, cX, cY } = resizedCoordinates(offsetX, offsetY, position, coordinates, startX, startY);
+                    const { sX, sY, cX, cY } = resizedCoordinates(zoomPosX, zoomPosY, position, coordinates, startX, startY);
 
                     updateElement(id, sX, sY, cX, cY);
                 }
             }
         },
-        [tool, action, elements, updateElement, getElementPosition, selectedElement]
+        [tool, action, isImageMove, elements, updateElement, getElementPosition, selectedElement, handleZoomMouseMove, mouseCursorStyle, getZoomPosition]
     );
     const handleMouseUp = useCallback(
         (e: React.MouseEvent) => {
+            handleZoomMouseUp();
+            if (isImageMove) return;
             const { offsetX, offsetY } = e.nativeEvent;
             if (tool === "bounding") {
                 const index = elements.length - 1;
                 const { id, sX, sY, cX, cY } = adjustElementCoordinates(elements[index]);
-                if (Math.abs(sX - offsetX) < 5 && Math.abs(sY - offsetY) < 5) return; // 마우스 클릭으로도 그릴 수 있게
+                const { zoomPosX, zoomPosY } = getZoomPosition(offsetX, offsetY);
+                if (Math.abs(sX - zoomPosX) < 5 && Math.abs(sY - zoomPosY) < 5) return; // 마우스 클릭으로도 그릴 수 있게
                 updateElement(id, sX, sY, cX, cY);
             } else if (tool === "select") {
                 if (selectedElement) {
@@ -351,13 +362,30 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
             }
             setAction("none");
         },
-        [tool, action, selectedElement, setSelectedElement, elements, updateElement]
+        [tool, action, isImageMove, selectedElement, setSelectedElement, elements, updateElement, handleZoomMouseUp, getZoomPosition]
     );
 
+    useEffect(() => {
+        const canvas = canvasRef.current!;
+        const preventDefault = (e: WheelEvent) => {
+            if (e.ctrlKey) {
+                e.preventDefault();
+            }
+        };
+        canvas.addEventListener("wheel", preventDefault, { passive: false });
+        return () => {
+            canvas.removeEventListener("wheel", preventDefault);
+        };
+    }, []);
+
     return (
-        <StyledWrap ref={wrapRef}>
-            <canvas ref={canvasRef} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp}></canvas>
-        </StyledWrap>
+        <StyledCanvas
+            ref={canvasRef}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onWheel={handleWheel}
+        ></StyledCanvas>
     );
 }
 

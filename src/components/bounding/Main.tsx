@@ -18,7 +18,15 @@ function Main() {
     return (
         <StyledWrap>
             <LeftBar tool={tool} setTool={setTool} setIsReset={setIsReset} />
-            <Canvas tool={tool} elements={elements} setElements={setElements} selectedElement={selectedElement} setSelectedElement={setSelectedElement} />
+            <Canvas
+                tool={tool}
+                elements={elements}
+                setElements={setElements}
+                selectedElement={selectedElement}
+                setSelectedElement={setSelectedElement}
+                isReset={isReset}
+                setIsReset={setIsReset}
+            />
         </StyledWrap>
     );
 }

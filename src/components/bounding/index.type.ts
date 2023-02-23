@@ -16,5 +16,9 @@ interface ISelectedElement extends IElements {
     startX?: number;
     startY?: number;
 }
+type Point = {
+    x: number;
+    y: number;
+};
 
-export type { ICanvasSize, IElements, ISelectedElement };
+export type { ICanvasSize, IElements, ISelectedElement, Point };
