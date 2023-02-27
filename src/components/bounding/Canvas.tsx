@@ -59,6 +59,7 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
     const [viewportTopLeft, setViewportTopLeft] = useState<Point>(ORIGIN);
     const [isImageMove, setIsImageMove] = useState<boolean>(false);
     const [isGrabbing, setIsGrabbing] = useState<boolean>(false);
+
     const mousePosRef = useRef<Point>(ORIGIN);
     const lastMousePosRef = useRef<Point>(ORIGIN);
     const lastOffsetRef = useRef<Point>(ORIGIN);
@@ -203,6 +204,95 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
         wrapRef.current.style.cursor = name;
     }, []);
 
+    const cutLineStroke = useCallback(
+        (sX: number, sY: number, cX: number, cY: number) => {
+            if (!ctx) return;
+            ctx.setLineDash([5, 5]);
+            const width = Math.abs(cX - sX);
+            const height = Math.abs(cY - sY);
+            const cutLineX = width - width * 0.95;
+            const cutLineY = height - height * 0.95;
+
+            const cutLine = Math.min(cutLineX, cutLineY);
+
+            ctx.strokeRect(Math.min(sX, cX) + cutLine / 2, Math.min(sY, cY) + cutLine / 2, width - cutLine, height - cutLine);
+        },
+        [ctx]
+    );
+
+    const draw = useCallback(
+        (getElementId?: number) => {
+            if (!ctx) return;
+
+            const imageWidth = canvasSize.width;
+            const imageHeight = (canvasSize.width * image.height) / image.width;
+            setDrawImageSize({ width: imageWidth, height: imageHeight });
+            ctx.drawImage(image, 0, (canvasSize.height - imageHeight) / 2, imageWidth, imageHeight);
+
+            const resizePointRect = RESIZE_POINT + 3 / scale;
+            elements.forEach(({ id, sX, sY, cX, cY }) => {
+                const width = cX - sX;
+                const height = cY - sY;
+                ctx.setLineDash([0]);
+                ctx.lineWidth = 2 / scale;
+                ctx.strokeRect(sX, sY, width, height);
+
+                if (getElementId === id) {
+                    if (!selectedElement || selectedElement.id !== getElementId) {
+                        ctx.globalAlpha = 0.5;
+                        ctx.fillRect(sX, sY, width, height);
+                        ctx.globalAlpha = 1;
+                    }
+                }
+
+                if (selectedElement) {
+                    // 현재 선택중인 rect 색상 변경
+                    if (id === selectedElement.id) {
+                        ctx.fillStyle = "white";
+
+                        if (tool === "select") {
+                            ctx.strokeRect(cX - resizePointRect / 2, sY - resizePointRect / 2, resizePointRect, resizePointRect);
+                            ctx.fillRect(cX - resizePointRect / 2, sY - resizePointRect / 2, resizePointRect, resizePointRect);
+
+                            ctx.strokeRect(sX - resizePointRect / 2, sY - resizePointRect / 2, resizePointRect, resizePointRect);
+                            ctx.fillRect(sX - resizePointRect / 2, sY - resizePointRect / 2, resizePointRect, resizePointRect);
+
+                            ctx.strokeRect(sX - resizePointRect / 2, cY - resizePointRect / 2, resizePointRect, resizePointRect);
+                            ctx.fillRect(sX - resizePointRect / 2, cY - resizePointRect / 2, resizePointRect, resizePointRect);
+
+                            ctx.strokeRect(cX - resizePointRect / 2, cY - resizePointRect / 2, resizePointRect, resizePointRect);
+                            ctx.fillRect(cX - resizePointRect / 2, cY - resizePointRect / 2, resizePointRect, resizePointRect);
+                        }
+                        cutLineStroke(sX, sY, cX, cY);
+                    }
+                }
+            });
+        },
+        [RESIZE_POINT, canvasSize, ctx, elements, scale, selectedElement, tool, cutLineStroke]
+    );
+
+    // draw
+    useEffect(() => {
+        if (!ctx) return;
+        // clear canvas but maintain transform
+        const storedTransform = ctx.getTransform();
+        ctx.canvas.width = ctx.canvas.width!;
+        ctx.canvas.style.background = "gray";
+        ctx.setTransform(storedTransform);
+        draw();
+    }, [ctx, scale, offset, draw]);
+
+    const getMouseOverElement = useCallback(
+        (element: ISelectedElement | undefined) => {
+            if (element) {
+                draw(element.id);
+            } else {
+                draw();
+            }
+        },
+        [draw]
+    );
+
     //mouse cursor style
     useEffect(() => {
         if (tool === "move" || isImageMove === true) {
@@ -214,49 +304,6 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
             mouseCursorStyle("default");
         }
     }, [tool, isImageMove, isGrabbing, mouseCursorStyle]);
-
-    // draw
-    useEffect(() => {
-        if (!ctx) return;
-        // clear canvas but maintain transform
-        const storedTransform = ctx.getTransform();
-        ctx.canvas.width = ctx.canvas.width!;
-        ctx.canvas.style.background = "gray";
-        ctx.setTransform(storedTransform);
-
-        const imageWidth = canvasSize.width;
-        const imageHeight = (canvasSize.width * image.height) / image.width;
-        setDrawImageSize({ width: imageWidth, height: imageHeight });
-
-        ctx.drawImage(image, 0, (canvasSize.height - imageHeight) / 2, imageWidth, imageHeight);
-
-        const resizePointRect = RESIZE_POINT + 3 / scale;
-        elements.forEach(({ id, sX, sY, cX, cY }) => {
-            const width = cX - sX;
-            const height = cY - sY;
-            ctx.strokeRect(sX, sY, width, height);
-            if (selectedElement) {
-                // 현재 선택중인 rect 색상 변경
-                if (id === selectedElement.id) {
-                    ctx.fillStyle = "white";
-
-                    if (tool === "select") {
-                        ctx.strokeRect(cX - resizePointRect / 2, sY - resizePointRect / 2, resizePointRect, resizePointRect);
-                        ctx.fillRect(cX - resizePointRect / 2, sY - resizePointRect / 2, resizePointRect, resizePointRect);
-
-                        ctx.strokeRect(sX - resizePointRect / 2, sY - resizePointRect / 2, resizePointRect, resizePointRect);
-                        ctx.fillRect(sX - resizePointRect / 2, sY - resizePointRect / 2, resizePointRect, resizePointRect);
-
-                        ctx.strokeRect(sX - resizePointRect / 2, cY - resizePointRect / 2, resizePointRect, resizePointRect);
-                        ctx.fillRect(sX - resizePointRect / 2, cY - resizePointRect / 2, resizePointRect, resizePointRect);
-
-                        ctx.strokeRect(cX - resizePointRect / 2, cY - resizePointRect / 2, resizePointRect, resizePointRect);
-                        ctx.fillRect(cX - resizePointRect / 2, cY - resizePointRect / 2, resizePointRect, resizePointRect);
-                    }
-                }
-            }
-        });
-    }, [ctx, scale, offset, canvasSize, elements, selectedElement, tool, RESIZE_POINT]);
 
     //image move
     useEffect(() => {
@@ -301,6 +348,7 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
                 viewportTopLeft={viewportTopLeft}
                 scale={scale}
                 drawImageSize={drawImageSize}
+                getMouseOverElement={getMouseOverElement}
             ></CanvasHandler>
         </StyledWrap>
     );
