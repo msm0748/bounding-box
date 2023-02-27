@@ -1,4 +1,4 @@
-interface ICanvasSize {
+interface ISize {
     width: number;
     height: number;
 }
@@ -21,4 +21,4 @@ type Point = {
     y: number;
 };
 
-export type { ICanvasSize, IElements, ISelectedElement, Point };
+export type { ISize, IElements, ISelectedElement, Point };

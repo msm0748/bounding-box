@@ -1,10 +1,10 @@
 import { useRef, useState, useEffect, useCallback, Dispatch, SetStateAction } from "react";
 import styled from "styled-components";
-import { ICanvasSize, IElements, ISelectedElement, Point } from "./index.type";
+import { ISize, IElements, ISelectedElement, Point } from "./index.type";
 
 interface Props {
     tool: "select" | "move" | "bounding";
-    canvasSize: ICanvasSize;
+    canvasSize: ISize;
     elements: IElements[];
     setElements: Dispatch<SetStateAction<IElements[]>>;
     selectedElement: ISelectedElement | null;
@@ -18,6 +18,7 @@ interface Props {
     RESIZE_POINT: number;
     viewportTopLeft: Point;
     scale: number;
+    drawImageSize: ISize;
 }
 
 const StyledCanvas = styled.canvas`
@@ -136,6 +137,7 @@ function Canvas({
     RESIZE_POINT,
     viewportTopLeft,
     scale,
+    drawImageSize,
 }: Props) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
@@ -203,12 +205,13 @@ function Canvas({
             let zoomPosX = offsetX / scale + viewportTopLeft.x;
             let zoomPosY = offsetY / scale + viewportTopLeft.y;
             if (zoomPosX < 0) zoomPosX = 0;
-            if (zoomPosY < 0) zoomPosY = 0;
+            if (zoomPosY < (canvas.height - drawImageSize.height) / 2) zoomPosY = (canvas.height - drawImageSize.height) / 2;
             if (zoomPosX > canvas.width) zoomPosX = canvas.width;
-            if (zoomPosY > canvas.height) zoomPosY = canvas.height;
+            if (zoomPosY > (canvas.height + drawImageSize.height) / 2) zoomPosY = (canvas.height + drawImageSize.height) / 2;
+            // drawImage 이탈 금지
             return { zoomPosX, zoomPosY };
         },
-        [viewportTopLeft, scale]
+        [viewportTopLeft, scale, drawImageSize]
     );
 
     const getElementPosition = useCallback(
@@ -313,9 +316,9 @@ function Canvas({
                     //마우스 위치에서 부터 자연스럽게 이동
 
                     if (newX < 0) newX = 0;
-                    if (newY < 0) newY = 0;
+                    if (newY < (canvas.height - drawImageSize.height) / 2) newY = (canvas.height - drawImageSize.height) / 2;
                     if (newX + width > canvas.width) newX = canvas.width - width;
-                    if (newY + height > canvas.height) newY = canvas.height - height;
+                    if (newY + height > (canvas.height + drawImageSize.height) / 2) newY = (canvas.height + drawImageSize.height) / 2 - height;
                     //canvas 이탈 금지
 
                     updateElement(id, newX, newY, newX + width, newY + height);
@@ -333,7 +336,19 @@ function Canvas({
                 }
             }
         },
-        [tool, action, isImageMove, elements, updateElement, getElementPosition, selectedElement, handleZoomMouseMove, mouseCursorStyle, getZoomPosition]
+        [
+            tool,
+            action,
+            isImageMove,
+            elements,
+            updateElement,
+            getElementPosition,
+            selectedElement,
+            handleZoomMouseMove,
+            mouseCursorStyle,
+            getZoomPosition,
+            drawImageSize,
+        ]
     );
     const handleMouseUp = useCallback(
         (e: React.MouseEvent) => {

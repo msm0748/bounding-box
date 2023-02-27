@@ -1,7 +1,7 @@
 import React from "react";
 import { useRef, useState, useEffect, useLayoutEffect, useCallback, Dispatch, SetStateAction } from "react";
 import styled from "styled-components";
-import { ICanvasSize, IElements, ISelectedElement, Point } from "./index.type";
+import { ISize, IElements, ISelectedElement, Point } from "./index.type";
 import CanvasHandler from "./CanvasHandler";
 import test from "../../assets/images/test.jpg";
 
@@ -50,7 +50,8 @@ image.src = test;
 
 function Canvas({ tool, elements, setElements, selectedElement, setSelectedElement, isReset, setIsReset }: Props) {
     const wrapRef = useRef<HTMLDivElement>(null);
-    const [canvasSize, setCanvasSize] = useState<ICanvasSize>({ width: 0, height: 0 });
+    const [canvasSize, setCanvasSize] = useState<ISize>({ width: 0, height: 0 });
+    const [drawImageSize, setDrawImageSize] = useState<ISize>({ width: 0, height: 0 });
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
     const [scale, setScale] = useState<number>(1);
@@ -225,6 +226,7 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
 
         const imageWidth = canvasSize.width;
         const imageHeight = (canvasSize.width * image.height) / image.width;
+        setDrawImageSize({ width: imageWidth, height: imageHeight });
 
         ctx.drawImage(image, 0, (canvasSize.height - imageHeight) / 2, imageWidth, imageHeight);
 
@@ -298,6 +300,7 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
                 RESIZE_POINT={RESIZE_POINT}
                 viewportTopLeft={viewportTopLeft}
                 scale={scale}
+                drawImageSize={drawImageSize}
             ></CanvasHandler>
         </StyledWrap>
     );
