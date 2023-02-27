@@ -248,6 +248,46 @@ function Canvas({
         },
         [elements, setElements]
     );
+    const crosshair = useCallback(() => {
+        const canvas = canvasRef.current!;
+        let x = mousePosRef.current.x;
+        let y = mousePosRef.current.y;
+
+        if (x / scale + viewportTopLeft.x < 0) {
+            x = -viewportTopLeft.x * scale;
+        }
+        if (y / scale + (viewportTopLeft.y - (canvas.height - drawImageSize.height) / 2) < 0) {
+            y = -(viewportTopLeft.y - (canvas.height - drawImageSize.height) / 2) * scale;
+        }
+        if (x / scale + viewportTopLeft.x > canvas.width) {
+            x = (-viewportTopLeft.x + canvas.width) * scale;
+        }
+        if (y / scale + (viewportTopLeft.y + (canvas.height - drawImageSize.height) / 2) > canvas.height) {
+            y = (-viewportTopLeft.y + canvas.height - (canvas.height - drawImageSize.height) / 2) * scale;
+        }
+
+        ctx?.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+        if (tool !== "bounding") return;
+        ctx?.setLineDash([2, 5]);
+        ctx!.lineWidth = 1;
+        ctx!.globalAlpha = 1;
+        ctx!.strokeStyle = "black";
+        ctx?.beginPath();
+        ctx?.moveTo(0, y);
+        ctx?.lineTo(canvas.offsetWidth, y);
+        ctx?.stroke();
+        ctx?.closePath();
+
+        ctx?.beginPath();
+        ctx?.moveTo(x, 0);
+        ctx?.lineTo(x, canvas.offsetHeight);
+        ctx?.stroke();
+        ctx?.closePath();
+    }, [ctx, tool, viewportTopLeft, scale, drawImageSize]);
+
+    useEffect(() => {
+        crosshair();
+    }, [crosshair]);
 
     const handleMouseDown = useCallback(
         (e: React.MouseEvent) => {
@@ -281,11 +321,12 @@ function Canvas({
     );
     const handleMouseMove = useCallback(
         (e: React.MouseEvent) => {
-            handleZoomMouseMove(e);
-            if (isImageMove) return;
             const { offsetX, offsetY } = e.nativeEvent;
             mousePosRef.current.x = offsetX;
             mousePosRef.current.y = offsetY;
+            crosshair();
+            handleZoomMouseMove(e);
+            if (isImageMove) return;
             if (tool === "bounding") {
                 if (action === "drawing") {
                     const { zoomPosX, zoomPosY } = getZoomPosition(offsetX, offsetY);
@@ -348,6 +389,7 @@ function Canvas({
             mouseCursorStyle,
             getZoomPosition,
             drawImageSize,
+            crosshair,
         ]
     );
     const handleMouseUp = useCallback(
