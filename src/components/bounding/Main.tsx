@@ -2,6 +2,7 @@ import { useState } from "react";
 import styled from "styled-components";
 import LeftBar from "./LeftBar";
 import Canvas from "./Canvas";
+import RightBar from "./RightBar";
 import { ICategory, IElements, ISelectedElement } from "./index.type";
 
 const StyledWrap = styled.main`
@@ -43,6 +44,16 @@ function Main() {
                 isReset={isReset}
                 setIsReset={setIsReset}
             />
+            <RightBar
+                elements={elements}
+                setElements={setElements}
+                categoryList={categoryList}
+                tool={tool}
+                setTool={setTool}
+                selectedElement={selectedElement}
+                setSelectedElement={setSelectedElement}
+                setIsReset={setIsReset}
+            ></RightBar>
         </StyledWrap>
     );
 }
