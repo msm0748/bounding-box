@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useCallback, Dispatch, SetStateAction } from "react";
 import styled from "styled-components";
-import { ISize, IElements, ISelectedElement, Point } from "./index.type";
+import { ISize, IElements, ISelectedElement, Point, ICategory } from "./index.type";
 
 interface Props {
     tool: "select" | "move" | "bounding";
@@ -20,6 +20,7 @@ interface Props {
     scale: number;
     drawImageSize: ISize;
     getMouseOverElement: (element: ISelectedElement | undefined) => void;
+    category: ICategory;
 }
 
 const StyledCanvas = styled.canvas`
@@ -30,10 +31,6 @@ const StyledCanvas = styled.canvas`
 `;
 
 const ORIGIN = { x: 0, y: 0 };
-
-const createElement = (id: number, sX: number, sY: number, cX: number, cY: number) => {
-    return { id, sX, sY, cX, cY };
-};
 
 const adjustElementCoordinates = (element: IElements) => {
     //오른쪽에서 왼쪽으로 그릴때 좌표값 제대로  잡아주기
@@ -140,6 +137,7 @@ function Canvas({
     scale,
     drawImageSize,
     getMouseOverElement,
+    category,
 }: Props) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
@@ -156,6 +154,13 @@ function Canvas({
         const context = canvas.getContext("2d");
         setCtx(context);
     }, [canvasSize]);
+
+    const createElement = useCallback(
+        (id: number, sX: number, sY: number, cX: number, cY: number, color: string = category.color, title: string = category.title) => {
+            return { id, sX, sY, cX, cY, color, title };
+        },
+        [category]
+    );
 
     const nearPoint = useCallback(
         (offsetX: number, offsetY: number, x: number, y: number, name: string, cX?: number, cY?: number) => {
@@ -242,13 +247,13 @@ function Canvas({
     );
 
     const updateElement = useCallback(
-        (id: number, sX: number, sY: number, cX: number, cY: number) => {
-            const updateElement = createElement(id, sX, sY, cX, cY);
+        (id: number, sX: number, sY: number, cX: number, cY: number, color: string, title: string) => {
+            const updateElement = createElement(id, sX, sY, cX, cY, color, title);
 
             const elementsCopy = [...elements].map((element) => (element.id === id ? updateElement : element));
             setElements(elementsCopy);
         },
-        [elements, setElements]
+        [elements, setElements, createElement]
     );
     const crosshair = useCallback(() => {
         const canvas = canvasRef.current!;
@@ -320,7 +325,7 @@ function Canvas({
                 }
             }
         },
-        [tool, action, isImageMove, setElements, getElementPosition, setSelectedElement, handleZoomMouseDown, getZoomPosition]
+        [tool, action, isImageMove, setElements, getElementPosition, setSelectedElement, handleZoomMouseDown, getZoomPosition, createElement]
     );
     const handleMouseMove = useCallback(
         (e: React.MouseEvent) => {
@@ -334,8 +339,8 @@ function Canvas({
                 if (action === "drawing") {
                     const { zoomPosX, zoomPosY } = getZoomPosition(offsetX, offsetY);
                     const index = elements.length - 1;
-                    const { id, sX, sY } = elements[index];
-                    updateElement(id, sX, sY, zoomPosX, zoomPosY);
+                    const { id, sX, sY, color, title } = elements[index];
+                    updateElement(id, sX, sY, zoomPosX, zoomPosY, color, title);
                 }
             } else if (tool === "select") {
                 const element = getElementPosition(offsetX, offsetY);
@@ -347,7 +352,7 @@ function Canvas({
                 if (action === "moving") {
                     const canvas = canvasRef.current!;
                     if (!selectedElement) return;
-                    const { id, sX, sY, cX, cY, startX, startY } = selectedElement;
+                    const { id, sX, sY, cX, cY, startX, startY, color, title } = selectedElement;
                     if (!(startX && startY)) return;
                     const { zoomPosX, zoomPosY } = getZoomPosition(offsetX, offsetY);
 
@@ -366,18 +371,18 @@ function Canvas({
                     if (newY + height > (canvas.height + drawImageSize.height) / 2) newY = (canvas.height + drawImageSize.height) / 2 - height;
                     //canvas 이탈 금지
 
-                    updateElement(id, newX, newY, newX + width, newY + height);
+                    updateElement(id, newX, newY, newX + width, newY + height, color, title);
                 } else if (action === "resizing") {
                     if (!selectedElement) return;
                     const { position, startX, startY, ...coordinates } = selectedElement;
-                    const { id } = selectedElement;
+                    const { id, color, title } = selectedElement;
                     const { zoomPosX, zoomPosY } = getZoomPosition(offsetX, offsetY);
 
                     if (!position) return;
                     if (!(startX && startY)) return;
                     const { sX, sY, cX, cY } = resizedCoordinates(zoomPosX, zoomPosY, position, coordinates, startX, startY);
 
-                    updateElement(id, sX, sY, cX, cY);
+                    updateElement(id, sX, sY, cX, cY, color, title);
                 }
             }
         },
@@ -404,17 +409,17 @@ function Canvas({
             const { offsetX, offsetY } = e.nativeEvent;
             if (tool === "bounding") {
                 const index = elements.length - 1;
-                const { id, sX, sY, cX, cY } = adjustElementCoordinates(elements[index]);
+                const { id, sX, sY, cX, cY, color, title } = adjustElementCoordinates(elements[index]);
                 const { zoomPosX, zoomPosY } = getZoomPosition(offsetX, offsetY);
                 if (Math.abs(sX - zoomPosX) < 5 && Math.abs(sY - zoomPosY) < 5) return; // 마우스 클릭으로도 그릴 수 있게
-                updateElement(id, sX, sY, cX, cY);
+                updateElement(id, sX, sY, cX, cY, color, title);
             } else if (tool === "select") {
                 if (selectedElement) {
                     if (action === "resizing") {
                         const element = elements.find((element) => element.id === selectedElement.id);
                         if (!element) return;
-                        const { id, sX, sY, cX, cY } = adjustElementCoordinates(element);
-                        updateElement(id, sX, sY, cX, cY);
+                        const { id, sX, sY, cX, cY, color, title } = adjustElementCoordinates(element);
+                        updateElement(id, sX, sY, cX, cY, color, title);
                     }
                     const updateSelectedElement = [...elements].find((element) => element.id === selectedElement.id);
                     if (updateSelectedElement) {

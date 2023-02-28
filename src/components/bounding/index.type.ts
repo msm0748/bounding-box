@@ -3,7 +3,7 @@ interface ISize {
     height: number;
 }
 
-interface IElements {
+interface IElements extends ICategory {
     id: number;
     sX: number;
     sY: number;
@@ -16,9 +16,15 @@ interface ISelectedElement extends IElements {
     startX?: number;
     startY?: number;
 }
+
+interface ICategory {
+    color: string;
+    title: string;
+}
+
 type Point = {
     x: number;
     y: number;
 };
 
-export type { ISize, IElements, ISelectedElement, Point };
+export type { ISize, IElements, ISelectedElement, Point, ICategory };

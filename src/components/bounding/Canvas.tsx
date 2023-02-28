@@ -1,8 +1,9 @@
 import React from "react";
 import { useRef, useState, useEffect, useLayoutEffect, useCallback, Dispatch, SetStateAction } from "react";
 import styled from "styled-components";
-import { ISize, IElements, ISelectedElement, Point } from "./index.type";
+import { ISize, IElements, ISelectedElement, Point, ICategory } from "./index.type";
 import CanvasHandler from "./CanvasHandler";
+import CategoryDropDown from "./category";
 import test from "../../assets/images/test.jpg";
 
 interface Props {
@@ -13,6 +14,9 @@ interface Props {
     setSelectedElement: Dispatch<SetStateAction<ISelectedElement | null>>;
     isReset: boolean;
     setIsReset: Dispatch<SetStateAction<boolean>>;
+    category: ICategory;
+    setCategory: Dispatch<SetStateAction<ICategory>>;
+    categoryList: ICategory[];
 }
 
 const StyledWrap = styled.div`
@@ -48,7 +52,7 @@ const MIN_SCALE = 0.1;
 const image = new Image();
 image.src = test;
 
-function Canvas({ tool, elements, setElements, selectedElement, setSelectedElement, isReset, setIsReset }: Props) {
+function Canvas({ tool, elements, setElements, selectedElement, setSelectedElement, isReset, setIsReset, category, setCategory, categoryList }: Props) {
     const wrapRef = useRef<HTMLDivElement>(null);
     const [canvasSize, setCanvasSize] = useState<ISize>({ width: 0, height: 0 });
     const [drawImageSize, setDrawImageSize] = useState<ISize>({ width: 0, height: 0 });
@@ -230,16 +234,18 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
             ctx.drawImage(image, 0, (canvasSize.height - imageHeight) / 2, imageWidth, imageHeight);
 
             const resizePointRect = RESIZE_POINT + 3 / scale;
-            elements.forEach(({ id, sX, sY, cX, cY }) => {
+            elements.forEach(({ id, sX, sY, cX, cY, color }) => {
                 const width = cX - sX;
                 const height = cY - sY;
                 ctx.setLineDash([0]);
+                ctx.strokeStyle = color;
                 ctx.lineWidth = 2 / scale;
                 ctx.strokeRect(sX, sY, width, height);
 
                 if (getElementId === id) {
                     if (!selectedElement || selectedElement.id !== getElementId) {
                         ctx.globalAlpha = 0.5;
+                        ctx.fillStyle = color;
                         ctx.fillRect(sX, sY, width, height);
                         ctx.globalAlpha = 1;
                     }
@@ -330,6 +336,7 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
 
     return (
         <StyledWrap ref={wrapRef}>
+            {tool === "bounding" && <CategoryDropDown category={category} setCategory={setCategory} categoryList={categoryList} isAbsolute={true} />}
             <StyledCanvas ref={canvasRef} width={canvasSize.width} height={canvasSize.height}></StyledCanvas>
             <CanvasHandler
                 tool={tool}
@@ -349,6 +356,7 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
                 scale={scale}
                 drawImageSize={drawImageSize}
                 getMouseOverElement={getMouseOverElement}
+                category={category}
             ></CanvasHandler>
         </StyledWrap>
     );
