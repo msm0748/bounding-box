@@ -19,7 +19,7 @@ interface Props {
     viewportTopLeft: Point;
     scale: number;
     drawImageSize: ISize;
-    getMouseOverElement: (element: ISelectedElement | undefined) => void;
+    setMouseOverElement: Dispatch<SetStateAction<ISelectedElement | undefined>>;
     category: ICategory;
 }
 
@@ -136,7 +136,7 @@ function Canvas({
     viewportTopLeft,
     scale,
     drawImageSize,
-    getMouseOverElement,
+    setMouseOverElement,
     category,
 }: Props) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -344,7 +344,7 @@ function Canvas({
                 }
             } else if (tool === "select") {
                 const element = getElementPosition(offsetX, offsetY);
-                getMouseOverElement(element);
+                setMouseOverElement(element);
                 if (action === "none") {
                     mouseCursorStyle(element ? cursorForPosition(element.position!) : "default");
                 }
@@ -399,7 +399,7 @@ function Canvas({
             getZoomPosition,
             drawImageSize,
             crosshair,
-            getMouseOverElement,
+            setMouseOverElement,
         ]
     );
     const handleMouseUp = useCallback(
