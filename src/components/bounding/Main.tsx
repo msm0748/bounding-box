@@ -34,6 +34,7 @@ function Main() {
     const [category, setCategory] = useState<ICategory>(categoryList[0]);
     const [canvasSize, setCanvasSize] = useState<ISize>({ width: 0, height: 0 });
     const [drawImageSize, setDrawImageSize] = useState<ISize>({ width: 0, height: 0 });
+    const [mouseOverElement, setMouseOverElement] = useState<ISelectedElement | undefined>(undefined);
 
     return (
         <StyledWrap>
@@ -54,6 +55,8 @@ function Main() {
                 setDrawImageSize={setDrawImageSize}
                 canvasSize={canvasSize}
                 setCanvasSize={setCanvasSize}
+                mouseOverElement={mouseOverElement}
+                setMouseOverElement={setMouseOverElement}
             />
             <RightBar
                 elements={elements}
@@ -67,6 +70,8 @@ function Main() {
                 image={image}
                 drawImageSize={drawImageSize}
                 canvasSize={canvasSize}
+                mouseOverElement={mouseOverElement}
+                setMouseOverElement={setMouseOverElement}
             ></RightBar>
         </StyledWrap>
     );

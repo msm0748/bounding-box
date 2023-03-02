@@ -21,6 +21,8 @@ interface Props {
     setDrawImageSize: Dispatch<SetStateAction<ISize>>;
     canvasSize: ISize;
     setCanvasSize: Dispatch<SetStateAction<ISize>>;
+    mouseOverElement: ISelectedElement | undefined;
+    setMouseOverElement: Dispatch<SetStateAction<ISelectedElement | undefined>>;
 }
 
 const StyledWrap = styled.div`
@@ -69,6 +71,8 @@ function Canvas({
     drawImageSize,
     canvasSize,
     setCanvasSize,
+    mouseOverElement,
+    setMouseOverElement,
 }: Props) {
     const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -79,8 +83,6 @@ function Canvas({
     const [viewportTopLeft, setViewportTopLeft] = useState<Point>(ORIGIN);
     const [isImageMove, setIsImageMove] = useState<boolean>(false);
     const [isGrabbing, setIsGrabbing] = useState<boolean>(false);
-    const [mouseOverElement, setMouseOverElement] = useState<ISelectedElement | undefined>(undefined);
-
     const mousePosRef = useRef<Point>(ORIGIN);
     const lastMousePosRef = useRef<Point>(ORIGIN);
     const lastOffsetRef = useRef<Point>(ORIGIN);

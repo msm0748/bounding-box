@@ -298,6 +298,7 @@ function Canvas({
 
     const handleMouseDown = useCallback(
         (e: React.MouseEvent) => {
+            if (e.button !== 0) return;
             handleZoomMouseDown(e);
             if (isImageMove) return;
             const { offsetX, offsetY } = e.nativeEvent;

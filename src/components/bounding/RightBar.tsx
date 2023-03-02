@@ -16,6 +16,8 @@ interface Props {
     image: HTMLImageElement;
     drawImageSize: ISize;
     canvasSize: ISize;
+    mouseOverElement: ISelectedElement | undefined;
+    setMouseOverElement: Dispatch<SetStateAction<ISelectedElement | undefined>>;
 }
 
 const StyledWrap = styled.section`
@@ -37,7 +39,7 @@ const StyledItem = styled.li`
     align-items: center;
     padding: 15px;
     cursor: pointer;
-    &: hover {
+    &.hover {
         background: rgba(0, 0, 0, 0.04);
     }
     &.active {
@@ -102,6 +104,8 @@ function RightBar({
     image,
     drawImageSize,
     canvasSize,
+    mouseOverElement,
+    setMouseOverElement,
 }: Props) {
     const [category, setCategory] = useState<ICategory>(categoryList[0]);
     const handleActive = useCallback(
@@ -198,7 +202,13 @@ function RightBar({
                 <StyledElementsListWrap>
                     <ul>
                         {elements.map((element) => (
-                            <StyledItem key={element.id} className={selectedElement?.id === element.id ? "active" : ""} onClick={() => handleActive(element)}>
+                            <StyledItem
+                                key={element.id}
+                                className={`${selectedElement?.id === element.id ? "active" : ""} ${mouseOverElement?.id === element.id ? "hover" : ""}`}
+                                onClick={() => handleActive(element)}
+                                onMouseEnter={() => setMouseOverElement(element)}
+                                onMouseLeave={() => setMouseOverElement(undefined)}
+                            >
                                 <StyledBlock>
                                     <ColorPointItem color={element.color} title={element.title} />
                                 </StyledBlock>
