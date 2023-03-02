@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, useEffect, useState, MouseEvent, useCallback } from "react";
 import styled from "styled-components";
-import { IElements, ICategory, ISelectedElement } from "./index.type";
+import { IElements, ICategory, ISelectedElement, ISize } from "./index.type";
 import ColorPointItem from "./category/ColorPointItem";
 import DropDown from "./category";
 
@@ -13,6 +13,9 @@ interface Props {
     selectedElement: ISelectedElement | null;
     setSelectedElement: Dispatch<SetStateAction<ISelectedElement | null>>;
     setIsReset: Dispatch<SetStateAction<boolean>>;
+    image: HTMLImageElement;
+    drawImageSize: ISize;
+    canvasSize: ISize;
 }
 
 const StyledWrap = styled.section`
@@ -87,7 +90,19 @@ const StyledSubmitBtn = styled.button`
     color: white;
 `;
 
-function RightBar({ elements, setElements, categoryList, tool, setTool, selectedElement, setSelectedElement, setIsReset }: Props) {
+function RightBar({
+    elements,
+    setElements,
+    categoryList,
+    tool,
+    setTool,
+    selectedElement,
+    setSelectedElement,
+    setIsReset,
+    image,
+    drawImageSize,
+    canvasSize,
+}: Props) {
     const [category, setCategory] = useState<ICategory>(categoryList[0]);
     const handleActive = useCallback(
         (element: IElements) => {
@@ -107,11 +122,47 @@ function RightBar({ elements, setElements, categoryList, tool, setTool, selected
         [setElements, setSelectedElement]
     );
 
+    const originalPositionX = useCallback(
+        (x: number) => {
+            const imageWidth = image.width;
+            return (imageWidth / drawImageSize.width) * x;
+        },
+        [image, drawImageSize]
+    );
+
+    const originalPositionY = useCallback(
+        (y: number) => {
+            const imageHeight = image.height;
+            return (imageHeight / drawImageSize.height) * (y - (canvasSize.height - drawImageSize.height) / 2);
+        },
+        [image, drawImageSize, canvasSize]
+    );
+
+    const resultElements = useCallback(() => {
+        const imageSrc = image.src;
+        const imageWidth = image.width;
+        const imageHeight = image.height;
+
+        const result = elements.map((element) => ({
+            label: element.title,
+            points: [
+                [originalPositionX(element.sX), originalPositionY(element.sY)],
+                [originalPositionX(element.cX), originalPositionY(element.cY)],
+            ],
+            type: "rectangle",
+            id: element.id,
+        }));
+
+        return { result, imageSrc, imageWidth, imageHeight };
+    }, [elements, image, originalPositionX, originalPositionY]);
+
     const handleSumbit = useCallback(async () => {
         setElements([]);
         setSelectedElement(null);
         setIsReset(true);
-    }, [setElements, setSelectedElement, setIsReset]);
+        const result = resultElements();
+        console.log(result);
+    }, [setElements, setSelectedElement, setIsReset, resultElements]);
 
     useEffect(() => {
         if (!selectedElement) return;

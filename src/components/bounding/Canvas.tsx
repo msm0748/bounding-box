@@ -4,7 +4,6 @@ import styled from "styled-components";
 import { ISize, IElements, ISelectedElement, Point, ICategory } from "./index.type";
 import CanvasHandler from "./CanvasHandler";
 import CategoryDropDown from "./category";
-import test from "../../assets/images/test.jpg";
 
 interface Props {
     tool: "select" | "move" | "bounding";
@@ -17,6 +16,11 @@ interface Props {
     category: ICategory;
     setCategory: Dispatch<SetStateAction<ICategory>>;
     categoryList: ICategory[];
+    image: HTMLImageElement;
+    drawImageSize: ISize;
+    setDrawImageSize: Dispatch<SetStateAction<ISize>>;
+    canvasSize: ISize;
+    setCanvasSize: Dispatch<SetStateAction<ISize>>;
 }
 
 const StyledWrap = styled.div`
@@ -49,13 +53,25 @@ const ZOOM_SENSITIVITY = 500; // bigger for lower zoom per scroll
 const MAX_SCALE = 4;
 const MIN_SCALE = 0.1;
 
-const image = new Image();
-image.src = test;
-
-function Canvas({ tool, elements, setElements, selectedElement, setSelectedElement, isReset, setIsReset, category, setCategory, categoryList }: Props) {
+function Canvas({
+    tool,
+    elements,
+    setElements,
+    selectedElement,
+    setSelectedElement,
+    isReset,
+    setIsReset,
+    category,
+    setCategory,
+    categoryList,
+    image,
+    setDrawImageSize,
+    drawImageSize,
+    canvasSize,
+    setCanvasSize,
+}: Props) {
     const wrapRef = useRef<HTMLDivElement>(null);
-    const [canvasSize, setCanvasSize] = useState<ISize>({ width: 0, height: 0 });
-    const [drawImageSize, setDrawImageSize] = useState<ISize>({ width: 0, height: 0 });
+
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
     const [scale, setScale] = useState<number>(1);
@@ -76,7 +92,7 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
         const canvas = canvasRef.current!;
         const context = canvas.getContext("2d");
         setCtx(context);
-    }, []);
+    }, [setCanvasSize]);
 
     // update last offset
     useEffect(() => {
@@ -267,7 +283,7 @@ function Canvas({ tool, elements, setElements, selectedElement, setSelectedEleme
                 }
             }
         });
-    }, [ctx, scale, offset, RESIZE_POINT, canvasSize, cutLineStroke, elements, tool, selectedElement, mouseOverElement]);
+    }, [ctx, scale, offset, RESIZE_POINT, canvasSize, cutLineStroke, elements, tool, selectedElement, mouseOverElement, image, setDrawImageSize]);
 
     //mouse cursor style
     useEffect(() => {

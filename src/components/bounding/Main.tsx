@@ -3,7 +3,8 @@ import styled from "styled-components";
 import LeftBar from "./LeftBar";
 import Canvas from "./Canvas";
 import RightBar from "./RightBar";
-import { ICategory, IElements, ISelectedElement } from "./index.type";
+import { ICategory, IElements, ISelectedElement, ISize } from "./index.type";
+import test from "../../assets/images/test.jpg";
 
 const StyledWrap = styled.main`
     display: flex;
@@ -22,12 +23,17 @@ const categoryList = [
     },
 ];
 
+const image = new Image();
+image.src = test;
+
 function Main() {
     const [elements, setElements] = useState<IElements[]>([]);
     const [tool, setTool] = useState<"select" | "move" | "bounding">("select");
     const [selectedElement, setSelectedElement] = useState<ISelectedElement | null>(null);
     const [isReset, setIsReset] = useState<boolean>(false);
     const [category, setCategory] = useState<ICategory>(categoryList[0]);
+    const [canvasSize, setCanvasSize] = useState<ISize>({ width: 0, height: 0 });
+    const [drawImageSize, setDrawImageSize] = useState<ISize>({ width: 0, height: 0 });
 
     return (
         <StyledWrap>
@@ -43,6 +49,11 @@ function Main() {
                 setSelectedElement={setSelectedElement}
                 isReset={isReset}
                 setIsReset={setIsReset}
+                image={image}
+                drawImageSize={drawImageSize}
+                setDrawImageSize={setDrawImageSize}
+                canvasSize={canvasSize}
+                setCanvasSize={setCanvasSize}
             />
             <RightBar
                 elements={elements}
@@ -53,6 +64,9 @@ function Main() {
                 selectedElement={selectedElement}
                 setSelectedElement={setSelectedElement}
                 setIsReset={setIsReset}
+                image={image}
+                drawImageSize={drawImageSize}
+                canvasSize={canvasSize}
             ></RightBar>
         </StyledWrap>
     );

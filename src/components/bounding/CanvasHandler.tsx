@@ -330,6 +330,7 @@ function Canvas({
     const handleMouseMove = useCallback(
         (e: React.MouseEvent) => {
             const { offsetX, offsetY } = e.nativeEvent;
+
             mousePosRef.current.x = offsetX;
             mousePosRef.current.y = offsetY;
             crosshair();
