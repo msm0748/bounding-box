@@ -15,6 +15,8 @@ const StyledWrap = styled.div`
     width: 48px;
     height: 100%;
     padding: 8px;
+    position: relative;
+    z-index: 2;
 `;
 
 const StyledButton = styled.button<{ hoverEffect: boolean }>`
@@ -46,6 +48,7 @@ function LeftBar({ tool, setTool, setIsReset }: Props) {
             document.removeEventListener("keydown", handleKeyDown);
         };
     }, [setTool, setIsReset]);
+    console.log("렌더");
     return (
         <StyledWrap>
             <div>

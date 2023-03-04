@@ -1,4 +1,10 @@
+import { Dispatch, SetStateAction } from "react";
 import styled from "styled-components";
+
+interface Props {
+    isShowTutorial: boolean;
+    setIsShowTutorial: Dispatch<SetStateAction<boolean>>;
+}
 
 const StyledWrap = styled.div`
     display: flex;
@@ -17,10 +23,14 @@ const StyledButton = styled.button`
     }
 `;
 
-function Header() {
+function Header({ isShowTutorial, setIsShowTutorial }: Props) {
     return (
         <StyledWrap>
-            <StyledButton>
+            <StyledButton
+                onClick={() => {
+                    setIsShowTutorial((prev) => !prev);
+                }}
+            >
                 <svg width="24" height="24" fill="rgba(26,26,26,0.8)" xmlns="http://www.w3.org/2000/svg" fillOpacity="1" viewBox="0 0 96 96">
                     <path
                         fillRule="evenodd"

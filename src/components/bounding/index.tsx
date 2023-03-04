@@ -1,8 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Header from "./Header";
 import Main from "./Main";
+import Tutorial from "./Tutorial";
 
 function Bounding() {
+    const [isShowTutorial, setIsShowTutorial] = useState<boolean>(false);
+
     useEffect(() => {
         const preventDefault = (e: MouseEvent) => {
             e.preventDefault();
@@ -14,8 +17,9 @@ function Bounding() {
     }, []);
     return (
         <>
-            <Header />
+            <Header isShowTutorial={isShowTutorial} setIsShowTutorial={setIsShowTutorial} />
             <Main />
+            <Tutorial isShowTutorial={isShowTutorial} setIsShowTutorial={setIsShowTutorial}></Tutorial>
         </>
     );
 }

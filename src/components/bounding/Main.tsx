@@ -4,12 +4,13 @@ import LeftBar from "./LeftBar";
 import Canvas from "./Canvas";
 import RightBar from "./RightBar";
 import { ICategory, IElements, ISelectedElement, ISize } from "./index.type";
-import test from "../../assets/images/test.jpg";
+import test from "../../assets/images/mission/test.jpg";
 
 const StyledWrap = styled.main`
     display: flex;
     width: 100%;
     height: calc(100% - 48px);
+    position: relative;
 `;
 
 const categoryList = [
