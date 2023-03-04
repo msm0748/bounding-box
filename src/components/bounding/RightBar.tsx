@@ -77,6 +77,7 @@ const StyledTextWrap = styled.div`
     margin-top: 170px;
     text-align: center;
     color: rgb(123, 126, 133);
+    font-size: 14px;
 `;
 
 const StyledSubmitWrap = styled.div`

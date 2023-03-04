@@ -27,7 +27,8 @@ const StyledWrap = styled.div<{ state: TransitionStatus }>`
 const StyledContainer = styled.div<{ state: TransitionStatus }>`
     width: calc(100% - 320px);
     max-width: 800px;
-    padding: 0 24px;
+    padding: 0 24px 24px;
+    overflow: auto;
     height: calc(100% - 48px);
     position: absolute;
     z-index: 1000;
@@ -61,16 +62,6 @@ const StyledList = styled.ul`
         position: relative;
         color: #a6a6ad;
         margin-bottom: 8px;
-        &:before {
-            position: absolute;
-            display: block;
-            left: 0;
-            top: 4px;
-            width: 3px;
-            height: 3px;
-            border-radius: 100%;
-            background: #a6a6ad;
-        }
     }
 `;
 
@@ -111,33 +102,33 @@ function Tutorial({ isShowTutorial, setIsShowTutorial }: Props) {
                         <StyledH3>1. 박스 그리기</StyledH3>
                         <StyledList>
                             <li>
-                                화면 왼쪽 도구 메뉴에서 <StyledSpan>[바운딩 박스] 아이콘</StyledSpan>을 눌러 주세요.
+                                · 화면 왼쪽 도구 메뉴에서 <StyledSpan>[바운딩 박스] 아이콘</StyledSpan>을 눌러 주세요.
                             </li>
                             <li>
-                                이미지에 포함된 <StyledSpan>박스 대상을 [클릭 + 드래그]</StyledSpan>해 박스를 그립니다.
+                                · 이미지에 포함된 <StyledSpan>박스 대상을 [클릭 + 드래그]</StyledSpan>해 박스를 그립니다.
                             </li>
                             <li>
-                                박스를 그리면 등장하는 <StyledSpan>실선과 점선 사이에 박스 대상의 외곽선이 포함</StyledSpan>되어야 합니다.
+                                · 박스를 그리면 등장하는 <StyledSpan>실선과 점선 사이에 박스 대상의 외곽선이 포함</StyledSpan>되어야 합니다.
                             </li>
                         </StyledList>
                         <StyledH3>2. 박스 수정하기</StyledH3>
                         <StyledList>
                             <li>
-                                화면 왼쪽 도구 메뉴에서 <StyledSpan>[선택하기] 아이콘</StyledSpan>을 눌러 주세요.
+                                · 화면 왼쪽 도구 메뉴에서 <StyledSpan>[선택하기] 아이콘</StyledSpan>을 눌러 주세요.
                             </li>
                             <li>
-                                수정할 <StyledSpan>박스 대상을 클릭</StyledSpan>해 박스를 수정합니다.
+                                · 수정할 <StyledSpan>박스 대상을 클릭</StyledSpan>해 박스를 수정합니다.
                             </li>
                         </StyledList>
                         <StyledH3>3. 카테고리 선택하기</StyledH3>
                         <StyledList>
                             <li>
-                                박스를 그린 후 박스 대상이 속하는 <StyledSpan>카테고리를 선택</StyledSpan>합니다.
+                                · 박스를 그린 후 박스 대상이 속하는 <StyledSpan>카테고리를 선택</StyledSpan>합니다.
                             </li>
                         </StyledList>
                         <StyledH3>4. 제출하기</StyledH3>
                         <StyledList>
-                            <li>완성된 라벨은 오른쪽 아래 [제출하기]를 눌러 제출합니다.</li>
+                            <li>· 완성된 라벨은 오른쪽 아래 [제출하기]를 눌러 제출합니다.</li>
                         </StyledList>
                         <StyledVideo muted loop autoPlay>
                             <source
