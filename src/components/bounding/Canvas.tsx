@@ -230,6 +230,18 @@ function Canvas({
         [ctx]
     );
 
+    // 초기 이미지 렌더링
+    useEffect(() => {
+        if (!ctx) return;
+        const imageWidth = canvasSize.width;
+        const imageHeight = (canvasSize.width * image.height) / image.width;
+
+        setDrawImageSize({ width: imageWidth, height: imageHeight });
+        image.onload = () => {
+            ctx.drawImage(image, 0, (canvasSize.height - imageHeight) / 2, imageWidth, imageHeight);
+        };
+    }, [image, ctx, canvasSize, setDrawImageSize, isReset]);
+
     // draw
     useEffect(() => {
         if (!ctx) return;
@@ -238,10 +250,8 @@ function Canvas({
         ctx.canvas.width = ctx.canvas.width!;
         ctx.canvas.style.background = "gray";
         ctx.setTransform(storedTransform);
-        const imageWidth = canvasSize.width;
-        const imageHeight = (canvasSize.width * image.height) / image.width;
-        setDrawImageSize({ width: imageWidth, height: imageHeight });
-        ctx.drawImage(image, 0, (canvasSize.height - imageHeight) / 2, imageWidth, imageHeight);
+
+        ctx.drawImage(image, 0, (canvasSize.height - drawImageSize.height) / 2, drawImageSize.width, drawImageSize.height);
 
         const resizePointRect = RESIZE_POINT + 3 / scale;
         elements.forEach(({ id, sX, sY, cX, cY, color }) => {
@@ -285,7 +295,7 @@ function Canvas({
                 }
             }
         });
-    }, [ctx, scale, offset, RESIZE_POINT, canvasSize, cutLineStroke, elements, tool, selectedElement, mouseOverElement, image, setDrawImageSize]);
+    }, [ctx, scale, offset, RESIZE_POINT, canvasSize, cutLineStroke, elements, tool, selectedElement, mouseOverElement, image, isReset, drawImageSize]);
 
     //mouse cursor style
     useEffect(() => {
