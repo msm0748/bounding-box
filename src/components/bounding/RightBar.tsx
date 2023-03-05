@@ -18,6 +18,9 @@ interface Props {
     canvasSize: ISize;
     mouseOverElement: ISelectedElement | undefined;
     setMouseOverElement: Dispatch<SetStateAction<ISelectedElement | undefined>>;
+    imageList: string[];
+    imageIndex: number;
+    setImageIndex: Dispatch<SetStateAction<number>>;
 }
 
 const StyledWrap = styled.section`
@@ -107,6 +110,9 @@ function RightBar({
     canvasSize,
     mouseOverElement,
     setMouseOverElement,
+    imageList,
+    imageIndex,
+    setImageIndex,
 }: Props) {
     const [category, setCategory] = useState<ICategory>(categoryList[0]);
     const handleActive = useCallback(
@@ -161,13 +167,20 @@ function RightBar({
         return { result, imageSrc, imageWidth, imageHeight };
     }, [elements, image, originalPositionX, originalPositionY]);
 
-    const handleSumbit = useCallback(async () => {
+    const handleSumbit = useCallback(() => {
         setElements([]);
         setSelectedElement(null);
         setIsReset(true);
         const result = resultElements();
+        if (imageIndex < imageList.length - 1) {
+            setImageIndex((prev) => prev + 1);
+        } else {
+            alert("더 이상 가져올 이미지가 없습니다.");
+            setImageIndex(0);
+        }
+
         console.log(result);
-    }, [setElements, setSelectedElement, setIsReset, resultElements]);
+    }, [setElements, setSelectedElement, setIsReset, resultElements, setImageIndex, imageIndex, imageList]);
 
     useEffect(() => {
         if (!selectedElement) return;

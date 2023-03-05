@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useRef } from "react";
 import { Transition, TransitionStatus } from "react-transition-group";
 import styled from "styled-components";
 
@@ -45,6 +45,11 @@ const StyledContainer = styled.div<{ state: TransitionStatus }>`
     }};
 `;
 
+const StyledH1 = styled.h1`
+    font-size: 32px;
+    margin: 40px 0 30px;
+`;
+
 const StyledH2 = styled.h2`
     font-size: 24px;
     margin: 40px 0 30px;
@@ -63,6 +68,11 @@ const StyledList = styled.ul`
         color: #a6a6ad;
         margin-bottom: 8px;
     }
+`;
+
+const StyledP = styled.p`
+    line-height: 22px;
+    word-break: keep-all;
 `;
 
 const StyledSpan = styled.span<{ color?: string }>`
@@ -86,18 +96,25 @@ const StyledTable = styled.table`
 
 const StyledVideo = styled.video`
     width: 100%;
-    cursor: pointer;
 `;
 
 function Tutorial({ isShowTutorial, setIsShowTutorial }: Props) {
+    const backgroundRef = useRef(null);
+    const tutorialRef = useRef(null);
     return (
         <>
-            <Transition in={isShowTutorial} timeout={300} unmountOnExit>
-                {(state) => <StyledWrap state={state} onClick={() => setIsShowTutorial(false)}></StyledWrap>}
+            <Transition in={isShowTutorial} timeout={300} unmountOnExit nodeRef={backgroundRef}>
+                {(state) => <StyledWrap state={state} ref={backgroundRef} onClick={() => setIsShowTutorial(false)}></StyledWrap>}
             </Transition>
-            <Transition in={isShowTutorial} timeout={300} unmountOnExit>
+            <Transition in={isShowTutorial} timeout={300} unmountOnExit nodeRef={tutorialRef}>
                 {(state) => (
-                    <StyledContainer state={state}>
+                    <StyledContainer state={state} ref={tutorialRef}>
+                        <StyledH1>데이터 라벨링이란?</StyledH1>
+                        <StyledP>
+                            사람이 만든 사진, 문서 등의 데이터를 인공지능(AI)이 학습할 수 있는 형태로 가공하는 것입니다. 데이터 라벨링의 예시로는 강아지 사진과
+                            동영상에 ‘강아지’라는 라벨을 붙이는 것이 있습니다. 라벨링을 통해 학습한 인공지능은 다음에 유사한 형태의 이미지를 강아지로 구분할 수
+                            있게 됩니다.
+                        </StyledP>
                         <StyledH2>진행 방법</StyledH2>
                         <StyledH3>1. 박스 그리기</StyledH3>
                         <StyledList>
@@ -126,16 +143,16 @@ function Tutorial({ isShowTutorial, setIsShowTutorial }: Props) {
                                 · 박스를 그린 후 박스 대상이 속하는 <StyledSpan>카테고리를 선택</StyledSpan>합니다.
                             </li>
                         </StyledList>
+                        <StyledVideo muted loop autoPlay>
+                            <source
+                                src="https://firebasestorage.googleapis.com/v0/b/cashmission-9f672.appspot.com/o/tutorial%2Ftutorial.webm?alt=media&token=b4e16b67-2b04-4aa9-9edd-fe6d0c5ef640"
+                                type="video/webm"
+                            />
+                        </StyledVideo>
                         <StyledH3>4. 제출하기</StyledH3>
                         <StyledList>
                             <li>· 완성된 라벨은 오른쪽 아래 [제출하기]를 눌러 제출합니다.</li>
                         </StyledList>
-                        <StyledVideo muted loop autoPlay>
-                            <source
-                                src="https://firebasestorage.googleapis.com/v0/b/cashmission-9f672.appspot.com/o/tutorial%2Ftutorial.webm?alt=media&token=de51246a-81bb-4b35-a615-03e6f81e27ea"
-                                type="video/webm"
-                            />
-                        </StyledVideo>
                         <StyledH2>단축키</StyledH2>
                         <StyledTable>
                             <colgroup>

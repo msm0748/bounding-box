@@ -28,6 +28,7 @@ const StyledWrap = styled.div`
     position: relative;
     width: 100%;
     background: gray;
+    flex: 1 1 0%;
 `;
 
 const StyledCanvas = styled.canvas`

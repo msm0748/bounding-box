@@ -4,7 +4,9 @@ import LeftBar from "./LeftBar";
 import Canvas from "./Canvas";
 import RightBar from "./RightBar";
 import { ICategory, IElements, ISelectedElement, ISize } from "./index.type";
-import test from "../../assets/images/mission/test.jpg";
+import test1 from "../../assets/images/mission/test1.jpg";
+import test2 from "../../assets/images/mission/test2.jpg";
+import test3 from "../../assets/images/mission/test3.jpg";
 
 const StyledWrap = styled.main`
     display: flex;
@@ -25,6 +27,7 @@ const categoryList = [
 ];
 
 const image = new Image();
+const imageList = [test1, test2, test3];
 
 function Main() {
     const [elements, setElements] = useState<IElements[]>([]);
@@ -35,17 +38,17 @@ function Main() {
     const [canvasSize, setCanvasSize] = useState<ISize>({ width: 0, height: 0 });
     const [drawImageSize, setDrawImageSize] = useState<ISize>({ width: 0, height: 0 });
     const [mouseOverElement, setMouseOverElement] = useState<ISelectedElement | undefined>(undefined);
+    const [imageIndex, setImageIndex] = useState(0);
 
     useEffect(() => {
-        image.src = test;
+        image.src = imageList[imageIndex];
         image.onload = () => {
             const imageWidth = canvasSize.width;
             const imageHeight = (canvasSize.width * image.height) / image.width;
-            console.log(imageWidth, imageHeight);
 
             setDrawImageSize({ width: imageWidth, height: imageHeight });
         };
-    }, [canvasSize]);
+    }, [canvasSize, imageIndex]);
 
     return (
         <StyledWrap>
@@ -82,6 +85,9 @@ function Main() {
                 canvasSize={canvasSize}
                 mouseOverElement={mouseOverElement}
                 setMouseOverElement={setMouseOverElement}
+                imageList={imageList}
+                imageIndex={imageIndex}
+                setImageIndex={setImageIndex}
             ></RightBar>
         </StyledWrap>
     );
