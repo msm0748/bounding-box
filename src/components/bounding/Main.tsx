@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import LeftBar from "./LeftBar";
 import Canvas from "./Canvas";
@@ -25,7 +25,6 @@ const categoryList = [
 ];
 
 const image = new Image();
-image.src = test;
 
 function Main() {
     const [elements, setElements] = useState<IElements[]>([]);
@@ -36,6 +35,17 @@ function Main() {
     const [canvasSize, setCanvasSize] = useState<ISize>({ width: 0, height: 0 });
     const [drawImageSize, setDrawImageSize] = useState<ISize>({ width: 0, height: 0 });
     const [mouseOverElement, setMouseOverElement] = useState<ISelectedElement | undefined>(undefined);
+
+    useEffect(() => {
+        image.src = test;
+        image.onload = () => {
+            const imageWidth = canvasSize.width;
+            const imageHeight = (canvasSize.width * image.height) / image.width;
+            console.log(imageWidth, imageHeight);
+
+            setDrawImageSize({ width: imageWidth, height: imageHeight });
+        };
+    }, [canvasSize]);
 
     return (
         <StyledWrap>
@@ -53,7 +63,6 @@ function Main() {
                 setIsReset={setIsReset}
                 image={image}
                 drawImageSize={drawImageSize}
-                setDrawImageSize={setDrawImageSize}
                 canvasSize={canvasSize}
                 setCanvasSize={setCanvasSize}
                 mouseOverElement={mouseOverElement}

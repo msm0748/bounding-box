@@ -16,7 +16,7 @@ const StyledWrap = styled.div`
     height: 100%;
     padding: 8px;
     position: relative;
-    z-index: 2;
+    z-index: 10;
 `;
 
 const StyledButton = styled.button<{ hoverEffect: boolean }>`

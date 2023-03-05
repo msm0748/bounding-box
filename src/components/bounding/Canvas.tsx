@@ -18,7 +18,6 @@ interface Props {
     categoryList: ICategory[];
     image: HTMLImageElement;
     drawImageSize: ISize;
-    setDrawImageSize: Dispatch<SetStateAction<ISize>>;
     canvasSize: ISize;
     setCanvasSize: Dispatch<SetStateAction<ISize>>;
     mouseOverElement: ISelectedElement | undefined;
@@ -67,7 +66,6 @@ function Canvas({
     setCategory,
     categoryList,
     image,
-    setDrawImageSize,
     drawImageSize,
     canvasSize,
     setCanvasSize,
@@ -86,7 +84,7 @@ function Canvas({
     const mousePosRef = useRef<Point>(ORIGIN);
     const lastMousePosRef = useRef<Point>(ORIGIN);
     const lastOffsetRef = useRef<Point>(ORIGIN);
-    const RESIZE_POINT = 9 / scale;
+    const [resizePoint, setIsResizePoint] = useState<number>(0);
 
     useEffect(() => {
         if (!wrapRef.current) return;
@@ -100,6 +98,10 @@ function Canvas({
     useEffect(() => {
         lastOffsetRef.current = offset;
     }, [offset]);
+
+    useEffect(() => {
+        setIsResizePoint(9 / scale);
+    }, [scale]);
 
     // reset
     useEffect(() => {
@@ -230,18 +232,6 @@ function Canvas({
         [ctx]
     );
 
-    // 초기 이미지 렌더링
-    useEffect(() => {
-        if (!ctx) return;
-        const imageWidth = canvasSize.width;
-        const imageHeight = (canvasSize.width * image.height) / image.width;
-
-        setDrawImageSize({ width: imageWidth, height: imageHeight });
-        image.onload = () => {
-            ctx.drawImage(image, 0, (canvasSize.height - imageHeight) / 2, imageWidth, imageHeight);
-        };
-    }, [image, ctx, canvasSize, setDrawImageSize, isReset]);
-
     // draw
     useEffect(() => {
         if (!ctx) return;
@@ -253,7 +243,7 @@ function Canvas({
 
         ctx.drawImage(image, 0, (canvasSize.height - drawImageSize.height) / 2, drawImageSize.width, drawImageSize.height);
 
-        const resizePointRect = RESIZE_POINT + 3 / scale;
+        const resizePointRect = resizePoint + 3 / scale;
         elements.forEach(({ id, sX, sY, cX, cY, color }) => {
             const width = cX - sX;
             const height = cY - sY;
@@ -295,7 +285,7 @@ function Canvas({
                 }
             }
         });
-    }, [ctx, scale, offset, RESIZE_POINT, canvasSize, cutLineStroke, elements, tool, selectedElement, mouseOverElement, image, isReset, drawImageSize]);
+    }, [ctx, scale, offset, resizePoint, canvasSize, cutLineStroke, elements, tool, selectedElement, mouseOverElement, image, drawImageSize]);
 
     //mouse cursor style
     useEffect(() => {
@@ -349,7 +339,7 @@ function Canvas({
                 setSelectedElement={setSelectedElement}
                 isImageMove={isImageMove}
                 mouseCursorStyle={mouseCursorStyle}
-                RESIZE_POINT={RESIZE_POINT}
+                resizePoint={resizePoint}
                 viewportTopLeft={viewportTopLeft}
                 scale={scale}
                 drawImageSize={drawImageSize}

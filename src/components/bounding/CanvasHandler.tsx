@@ -15,7 +15,7 @@ interface Props {
     handleZoomMouseUp: () => void;
     isImageMove: boolean;
     mouseCursorStyle: (name: string) => void;
-    RESIZE_POINT: number;
+    resizePoint: number;
     viewportTopLeft: Point;
     scale: number;
     drawImageSize: ISize;
@@ -132,7 +132,7 @@ function Canvas({
     handleWheel,
     isImageMove,
     mouseCursorStyle,
-    RESIZE_POINT,
+    resizePoint,
     viewportTopLeft,
     scale,
     drawImageSize,
@@ -168,16 +168,16 @@ function Canvas({
                 switch (name) {
                     case "t":
                     case "b":
-                        return x < offsetX && cX > offsetX && Math.abs(offsetY - y) < RESIZE_POINT ? name : null;
+                        return x < offsetX && cX > offsetX && Math.abs(offsetY - y) < resizePoint ? name : null;
                     case "l":
                     case "r":
-                        return y < offsetY && cY > offsetY && Math.abs(offsetX - x) < RESIZE_POINT ? name : null;
+                        return y < offsetY && cY > offsetY && Math.abs(offsetX - x) < resizePoint ? name : null;
                 }
             } else {
-                return Math.abs(offsetX - x) < RESIZE_POINT && Math.abs(offsetY - y) < RESIZE_POINT ? name : null;
+                return Math.abs(offsetX - x) < resizePoint && Math.abs(offsetY - y) < resizePoint ? name : null;
             }
         },
-        [RESIZE_POINT]
+        [resizePoint]
     );
 
     const positionWithinElement = useCallback(
