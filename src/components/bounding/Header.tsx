@@ -2,7 +2,6 @@ import { Dispatch, SetStateAction } from "react";
 import styled from "styled-components";
 
 interface Props {
-    isShowTutorial: boolean;
     setIsShowTutorial: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -23,7 +22,7 @@ const StyledButton = styled.button`
     }
 `;
 
-function Header({ isShowTutorial, setIsShowTutorial }: Props) {
+function Header({ setIsShowTutorial }: Props) {
     return (
         <StyledWrap>
             <StyledButton

@@ -27,7 +27,7 @@ const StyledWrap = styled.div<{ state: TransitionStatus }>`
 const StyledContainer = styled.div<{ state: TransitionStatus }>`
     width: calc(100% - 320px);
     max-width: 800px;
-    padding: 0 24px 24px;
+    padding: 0 24px 40px;
     overflow: auto;
     height: calc(100% - 48px);
     position: absolute;
@@ -96,6 +96,7 @@ const StyledTable = styled.table`
 
 const StyledVideo = styled.video`
     width: 100%;
+    margin-bottom: 40px;
 `;
 
 function Tutorial({ isShowTutorial, setIsShowTutorial }: Props) {
@@ -128,6 +129,12 @@ function Tutorial({ isShowTutorial, setIsShowTutorial }: Props) {
                                 · 박스를 그리면 등장하는 <StyledSpan>실선과 점선 사이에 박스 대상의 외곽선이 포함</StyledSpan>되어야 합니다.
                             </li>
                         </StyledList>
+                        <StyledVideo muted loop autoPlay>
+                            <source
+                                src="https://firebasestorage.googleapis.com/v0/b/cashmission-9f672.appspot.com/o/tutorial%2Fcreate.mp4?alt=media&token=a7322ed4-4254-4e18-aa1c-30a8e82addaf"
+                                type="video/mp4"
+                            />
+                        </StyledVideo>
                         <StyledH3>2. 박스 수정하기</StyledH3>
                         <StyledList>
                             <li>
@@ -137,18 +144,19 @@ function Tutorial({ isShowTutorial, setIsShowTutorial }: Props) {
                                 · 수정할 <StyledSpan>박스 대상을 클릭</StyledSpan>해 박스를 수정합니다.
                             </li>
                         </StyledList>
+                        <StyledVideo muted loop autoPlay>
+                            <source
+                                src="https://firebasestorage.googleapis.com/v0/b/cashmission-9f672.appspot.com/o/tutorial%2Fupdate.mp4?alt=media&token=06417b88-0592-4d8d-828e-b91dd084f74d"
+                                type="video/mp4"
+                            />
+                        </StyledVideo>
                         <StyledH3>3. 카테고리 선택하기</StyledH3>
                         <StyledList>
                             <li>
-                                · 박스를 그린 후 박스 대상이 속하는 <StyledSpan>카테고리를 선택</StyledSpan>합니다.
+                                · 박스를 그리기 전/후 박스 대상이 속하는 <StyledSpan>카테고리를 선택</StyledSpan>합니다.
                             </li>
                         </StyledList>
-                        <StyledVideo muted loop autoPlay>
-                            <source
-                                src="https://firebasestorage.googleapis.com/v0/b/cashmission-9f672.appspot.com/o/tutorial%2Ftutorial.webm?alt=media&token=b4e16b67-2b04-4aa9-9edd-fe6d0c5ef640"
-                                type="video/webm"
-                            />
-                        </StyledVideo>
+
                         <StyledH3>4. 제출하기</StyledH3>
                         <StyledList>
                             <li>· 완성된 라벨은 오른쪽 아래 [제출하기]를 눌러 제출합니다.</li>

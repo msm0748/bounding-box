@@ -8,7 +8,6 @@ interface Props {
     elements: IElements[];
     setElements: Dispatch<SetStateAction<IElements[]>>;
     categoryList: ICategory[];
-    tool: "select" | "move" | "bounding";
     setTool: Dispatch<SetStateAction<"select" | "move" | "bounding">>;
     selectedElement: ISelectedElement | null;
     setSelectedElement: Dispatch<SetStateAction<ISelectedElement | null>>;
@@ -100,7 +99,6 @@ function RightBar({
     elements,
     setElements,
     categoryList,
-    tool,
     setTool,
     selectedElement,
     setSelectedElement,

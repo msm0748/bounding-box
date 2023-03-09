@@ -17,7 +17,7 @@ function Bounding() {
     }, []);
     return (
         <>
-            <Header isShowTutorial={isShowTutorial} setIsShowTutorial={setIsShowTutorial} />
+            <Header setIsShowTutorial={setIsShowTutorial} />
             <Main />
             <Tutorial isShowTutorial={isShowTutorial} setIsShowTutorial={setIsShowTutorial}></Tutorial>
         </>

@@ -75,7 +75,6 @@ function Main() {
                 elements={elements}
                 setElements={setElements}
                 categoryList={categoryList}
-                tool={tool}
                 setTool={setTool}
                 selectedElement={selectedElement}
                 setSelectedElement={setSelectedElement}
