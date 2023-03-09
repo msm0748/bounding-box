@@ -1,12 +1,6 @@
-## 기술 스택
-
-### Front-end
+## 사용 기술
 
 `React`, `TypeScript`, `Styled-Components`, `Canvas`
-
-### Back-end
-
-`Firebase`
 
 ## Convention 종류
 

@@ -91,42 +91,6 @@ function LeftBar({ tool, setTool, setIsReset }: Props) {
                 </Tool>
             </div>
             <div>
-                <Tool text="확대하기 +">
-                    <StyledButton hoverEffect={false}>
-                        <svg width="24" height="24" fill="rgba(26,26,26,0.8)" fillOpacity="1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
-                            <path
-                                fillRule="evenodd"
-                                clipRule="evenodd"
-                                d="M45 18c-14.912 0-27 12.088-27 27s12.088 27 27 27 27-12.088 27-27-12.088-27-27-27ZM12 45c0-18.225 14.775-33 33-33s33 14.775 33 33c0 8.032-2.87 15.395-7.64 21.117L83.12 78.88a3 3 0 1 1-4.242 4.242L66.117 70.36A32.866 32.866 0 0 1 45 78c-18.225 0-33-14.775-33-33Zm33-17a3 3 0 0 1 3 3v12h12a3 3 0 1 1 0 6H48v12a3 3 0 1 1-6 0V49H30a3 3 0 1 1 0-6h12V31a3 3 0 0 1 3-3Z"
-                            ></path>
-                        </svg>
-                    </StyledButton>
-                </Tool>
-                <Tool text="축소하기 -">
-                    <StyledButton hoverEffect={false}>
-                        <svg width="24" height="24" fill="rgba(26,26,26,0.8)" fillOpacity="1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
-                            <path
-                                fillRule="evenodd"
-                                clipRule="evenodd"
-                                d="M45 18c-14.912 0-27 12.088-27 27s12.088 27 27 27 27-12.088 27-27-12.088-27-27-27ZM12 45c0-18.225 14.775-33 33-33s33 14.775 33 33c0 8.032-2.87 15.395-7.64 21.117L83.12 78.88a3 3 0 1 1-4.242 4.242L66.117 70.36A32.866 32.866 0 0 1 45 78c-18.225 0-33-14.775-33-33Zm14 1a3 3 0 0 1 3-3h32a3 3 0 1 1 0 6H29a3 3 0 0 1-3-3Z"
-                            ></path>
-                        </svg>
-                    </StyledButton>
-                </Tool>
-                <StyledLine />
-                <Tool text="선택한 라벨로 이동하기 Shift + 2">
-                    <StyledButton hoverEffect={false}>
-                        <svg width="24" height="24" fill="rgba(26,26,26,0.8)" xmlns="http://www.w3.org/2000/svg" fillOpacity="1" viewBox="0 0 96 96">
-                            <path
-                                fillRule="evenodd"
-                                clipRule="evenodd"
-                                d="M48 8a3 3 0 0 1 3 3v1h26a7 7 0 0 1 7 7v26h1a3 3 0 1 1 0 6h-1v26a7 7 0 0 1-7 7H51v1a3 3 0 1 1-6 0v-1H19a7 7 0 0 1-7-7V51h-1a3 3 0 1 1 0-6h1V19a7 7 0 0 1 7-7h26v-1a3 3 0 0 1 3-3Zm-3 10H19a1 1 0 0 0-1 1v26h27V18Zm0 33H18v26a1 1 0 0 0 1 1h26V51Zm6 27V51h27v26a1 1 0 0 1-1 1H51Zm27-33H51V18h26a1 1 0 0 1 1 1v26Z"
-                                fill="current"
-                                fillOpacity="current"
-                            ></path>
-                        </svg>
-                    </StyledButton>
-                </Tool>
                 <Tool text="화면 기본 크기 Shift + 1">
                     <StyledButton hoverEffect={false} onClick={() => setIsReset(true)}>
                         <svg width="24" height="24" fill="rgba(26,26,26,0.8)" fillOpacity="1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
