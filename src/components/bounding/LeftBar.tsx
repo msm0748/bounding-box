@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import Tool from "./tool";
-import { useEffect, Dispatch, SetStateAction } from "react";
+import { useEffect, Dispatch, SetStateAction, memo } from "react";
 
 interface Props {
     tool: "select" | "move" | "bounding";
@@ -48,6 +48,7 @@ function LeftBar({ tool, setTool, setIsReset }: Props) {
             document.removeEventListener("keydown", handleKeyDown);
         };
     }, [setTool, setIsReset]);
+    console.log("렌더");
     return (
         <StyledWrap>
             <div>
@@ -107,4 +108,4 @@ function LeftBar({ tool, setTool, setIsReset }: Props) {
     );
 }
 
-export default LeftBar;
+export default memo(LeftBar);
