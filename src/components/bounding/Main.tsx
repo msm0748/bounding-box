@@ -49,7 +49,6 @@ function Main() {
             setDrawImageSize({ width: imageWidth, height: imageHeight });
         };
     }, [canvasSize, imageIndex]);
-
     return (
         <StyledWrap>
             <LeftBar tool={tool} setTool={setTool} setIsReset={setIsReset} />

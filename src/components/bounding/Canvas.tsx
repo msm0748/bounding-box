@@ -286,7 +286,7 @@ function Canvas({
                 }
             }
         });
-    }, [ctx, scale, offset, resizePoint, canvasSize, cutLineStroke, elements, tool, selectedElement, mouseOverElement, image, drawImageSize]);
+    }, [ctx, scale, offset, resizePoint, canvasSize, cutLineStroke, elements, tool, selectedElement, mouseOverElement, image, drawImageSize, isReset]);
 
     //mouse cursor style
     useEffect(() => {
