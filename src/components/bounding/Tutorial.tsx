@@ -1,6 +1,7 @@
 import { Dispatch, SetStateAction, useRef } from "react";
 import { Transition, TransitionStatus } from "react-transition-group";
 import styled from "styled-components";
+import Modal from "./modal";
 
 interface Props {
     isShowTutorial: boolean;
@@ -57,7 +58,7 @@ const StyledH2 = styled.h2`
 
 const StyledH3 = styled.h3`
     font-size: 18px;
-    margin: 28px 0 14px;
+    margin: 32px 0 14px;
 `;
 
 const StyledList = styled.ul`
@@ -96,12 +97,12 @@ const StyledTable = styled.table`
 
 const StyledVideo = styled.video`
     width: 100%;
-    margin-bottom: 40px;
 `;
 
 function Tutorial({ isShowTutorial, setIsShowTutorial }: Props) {
     const backgroundRef = useRef(null);
     const tutorialRef = useRef(null);
+
     return (
         <>
             <Transition in={isShowTutorial} timeout={300} unmountOnExit nodeRef={backgroundRef}>
@@ -129,12 +130,14 @@ function Tutorial({ isShowTutorial, setIsShowTutorial }: Props) {
                                 · 박스를 그리면 등장하는 <StyledSpan>실선과 점선 사이에 박스 대상의 외곽선이 포함</StyledSpan>되어야 합니다.
                             </li>
                         </StyledList>
-                        <StyledVideo muted loop autoPlay>
-                            <source
-                                src="https://firebasestorage.googleapis.com/v0/b/cashmission-9f672.appspot.com/o/tutorial%2Fcreate.mp4?alt=media&token=a7322ed4-4254-4e18-aa1c-30a8e82addaf"
-                                type="video/mp4"
-                            />
-                        </StyledVideo>
+                        <Modal>
+                            <StyledVideo muted loop autoPlay>
+                                <source
+                                    src="https://firebasestorage.googleapis.com/v0/b/cashmission-9f672.appspot.com/o/tutorial%2Fcreate.mp4?alt=media&token=a7322ed4-4254-4e18-aa1c-30a8e82addaf"
+                                    type="video/mp4"
+                                />
+                            </StyledVideo>
+                        </Modal>
                         <StyledH3>2. 박스 수정하기</StyledH3>
                         <StyledList>
                             <li>
@@ -144,12 +147,14 @@ function Tutorial({ isShowTutorial, setIsShowTutorial }: Props) {
                                 · 수정할 <StyledSpan>박스 대상을 클릭</StyledSpan>해 박스를 수정합니다.
                             </li>
                         </StyledList>
-                        <StyledVideo muted loop autoPlay>
-                            <source
-                                src="https://firebasestorage.googleapis.com/v0/b/cashmission-9f672.appspot.com/o/tutorial%2Fupdate.mp4?alt=media&token=06417b88-0592-4d8d-828e-b91dd084f74d"
-                                type="video/mp4"
-                            />
-                        </StyledVideo>
+                        <Modal>
+                            <StyledVideo muted loop autoPlay>
+                                <source
+                                    src="https://firebasestorage.googleapis.com/v0/b/cashmission-9f672.appspot.com/o/tutorial%2Fupdate.mp4?alt=media&token=06417b88-0592-4d8d-828e-b91dd084f74d"
+                                    type="video/mp4"
+                                />
+                            </StyledVideo>
+                        </Modal>
                         <StyledH3>3. 카테고리 선택하기</StyledH3>
                         <StyledList>
                             <li>
