@@ -6,6 +6,8 @@ const StyledWrapper = styled.div`
 `;
 
 const img = new Image();
+const MIN_SCALE = 0.1;
+const MAX_SCALE = 10;
 
 function Canvas() {
     const wrapperRef = useRef<HTMLDivElement>(null);
@@ -43,7 +45,7 @@ function Canvas() {
         if (!ctx) return;
         const scale = scaleRef.current;
         const { x: viewPosX, y: viewPosY } = viewPosRef.current;
-        ctx.clearRect(0, 0, canvasSize.width, canvasSize.height);
+        ctx.canvas.width = canvasSize.width;
         ctx.setTransform(scale, 0, 0, scale, viewPosX, viewPosY);
         ctx.drawImage(img, 0, 0, canvasSize.width, canvasSize.height);
     };
@@ -77,23 +79,26 @@ function Canvas() {
     };
 
     const handleWheel = (e: React.WheelEvent) => {
+        e.preventDefault();
         const { offsetX, offsetY } = e.nativeEvent;
 
         const xs = (offsetX - viewPosRef.current.x) / scaleRef.current;
         const ys = (offsetY - viewPosRef.current.y) / scaleRef.current;
 
         const delta = -e.deltaY;
+        const ZOOM_SENSITIVITY = 1.025;
 
-        if (delta > 0) {
-            scaleRef.current *= 1.2;
-        } else {
-            scaleRef.current /= 1.2;
+        if (delta > 0 && scaleRef.current < MAX_SCALE) {
+            scaleRef.current *= ZOOM_SENSITIVITY;
+        } else if (delta < 0 && scaleRef.current > MIN_SCALE) {
+            scaleRef.current /= ZOOM_SENSITIVITY;
         }
 
         viewPosRef.current = {
             x: offsetX - xs * scaleRef.current,
             y: offsetY - ys * scaleRef.current,
         };
+
         draw();
     };
 
