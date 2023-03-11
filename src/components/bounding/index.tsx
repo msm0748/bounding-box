@@ -1,9 +1,11 @@
 import Header from "./Header";
+import Main from "./Main";
 
 function Bounding() {
     return (
         <>
-            <Header></Header>
+            <Header />
+            <Main />
         </>
     );
 }

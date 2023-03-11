@@ -1,11 +1,7 @@
 import Bounding from "./components/bounding";
 
 function App() {
-    return (
-        <div className="App">
-            <Bounding />
-        </div>
-    );
+    return <Bounding />;
 }
 
 export default App;

@@ -3,7 +3,6 @@ import styled from "styled-components";
 
 interface Props extends ButtonProps {
     children: ReactNode;
-    [key: string]: any; // any 타입의 나머지 props를 받기 위한 선언
 }
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

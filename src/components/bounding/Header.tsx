@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import Button from "../common/button";
 
-const StyledWrapper = styled.div`
+const StyledWrapper = styled.header`
     display: flex;
     justify-content: end;
     align-items: center;
