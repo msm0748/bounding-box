@@ -50,7 +50,6 @@ function scalePoint(p1: Point, scale: number) {
     return { x: p1.x / scale, y: p1.y / scale };
 }
 const ORIGIN = { x: 0, y: 0 };
-
 const ZOOM_SENSITIVITY = 500; // bigger for lower zoom per scroll
 const MAX_SCALE = 4;
 const MIN_SCALE = 0.1;
