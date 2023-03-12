@@ -8,7 +8,7 @@ interface Props extends ButtonProps {
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     width: number;
     height: number;
-    hoverBg: string;
+    hoverBg?: string;
 }
 
 const StyledButton = styled.button<ButtonProps>`

@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import Canvas from "./Canvas";
+import LeftBar from "./LeftBar";
 
 const StyledMain = styled.main`
     display: flex;
@@ -9,6 +10,7 @@ const StyledMain = styled.main`
 function Main() {
     return (
         <StyledMain>
+            <LeftBar />
             <Canvas />
         </StyledMain>
     );
