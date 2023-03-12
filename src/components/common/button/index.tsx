@@ -12,6 +12,16 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     hoverBg?: string;
 }
 
+function Button({ children, width, height, hoverBg, active, ...rest }: Props) {
+    return (
+        <StyledButton width={width} height={height} hoverBg={hoverBg} active={active} {...rest}>
+            {children}
+        </StyledButton>
+    );
+}
+
+export default Button;
+
 const StyledButton = styled.button<ButtonProps>`
     width: ${({ width }) => width}px;
     height: ${({ height }) => height}px;
@@ -24,13 +34,3 @@ const StyledButton = styled.button<ButtonProps>`
         background: ${({ hoverBg }) => hoverBg};
     }
 `;
-
-function Button({ children, width, height, hoverBg, active, ...rest }: Props) {
-    return (
-        <StyledButton width={width} height={height} hoverBg={hoverBg} active={active} {...rest}>
-            {children}
-        </StyledButton>
-    );
-}
-
-export default Button;

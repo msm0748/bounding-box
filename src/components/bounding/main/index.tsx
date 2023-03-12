@@ -3,11 +3,6 @@ import Canvas from "./Canvas";
 import LeftBar from "./LeftBar";
 import { useCallback, useState } from "react";
 
-const StyledMain = styled.main`
-    display: flex;
-    height: calc(100% - 48px);
-`;
-
 function Main() {
     const [tool, setTool] = useState<Tool>("select");
     const [reset, setReset] = useState(false);
@@ -27,3 +22,8 @@ function Main() {
     );
 }
 export default Main;
+
+const StyledMain = styled.main`
+    display: flex;
+    height: calc(100% - 48px);
+`;

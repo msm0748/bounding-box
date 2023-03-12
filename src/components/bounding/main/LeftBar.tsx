@@ -9,32 +9,6 @@ interface Props {
     setIsReset: (isReset: boolean) => void;
 }
 
-const StyledWrapper = styled.div`
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    width: 48px;
-    height: 100%;
-    padding: 24px 8px;
-`;
-
-const StyledLine = styled.div`
-    margin: 8px 4px;
-    border-bottom: 1px solid rgb(224, 225, 228);
-`;
-
-const StyledTopWrap = styled.div`
-    & > div:first-child {
-        margin-bottom: 8px;
-    }
-`;
-
-const StyledBottomWrap = styled.div`
-    & > div:not(:last-child) {
-        margin-bottom: 8px;
-    }
-`;
-
 const buttonProps = {
     width: 32,
     height: 32,
@@ -174,3 +148,29 @@ function LeftBar({ tool, onToolChange, setIsReset }: Props) {
 }
 
 export default LeftBar;
+
+const StyledWrapper = styled.div`
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 48px;
+    height: 100%;
+    padding: 24px 8px;
+`;
+
+const StyledLine = styled.div`
+    margin: 8px 4px;
+    border-bottom: 1px solid rgb(224, 225, 228);
+`;
+
+const StyledTopWrap = styled.div`
+    & > div:first-child {
+        margin-bottom: 8px;
+    }
+`;
+
+const StyledBottomWrap = styled.div`
+    & > div:not(:last-child) {
+        margin-bottom: 8px;
+    }
+`;

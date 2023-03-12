@@ -7,10 +7,6 @@ interface Props {
     setIsReset: (isReset: boolean) => void;
 }
 
-const StyledWrapper = styled.div`
-    flex: 1;
-`;
-
 const MIN_SCALE = 0.1;
 const MAX_SCALE = 10;
 
@@ -137,3 +133,7 @@ function Canvas({ reset, setIsReset }: Props) {
 }
 
 export default Canvas;
+
+const StyledWrapper = styled.div`
+    flex: 1;
+`;

@@ -1,14 +1,6 @@
 import styled from "styled-components";
 import Button from "../common/button";
 
-const StyledWrapper = styled.header`
-    display: flex;
-    justify-content: end;
-    align-items: center;
-    height: 48px;
-    padding: 0 15px;
-`;
-
 function Header() {
     return (
         <header>
@@ -30,3 +22,11 @@ function Header() {
 }
 
 export default Header;
+
+const StyledWrapper = styled.header`
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    height: 48px;
+    padding: 0 15px;
+`;

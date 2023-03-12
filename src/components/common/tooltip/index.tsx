@@ -6,6 +6,21 @@ interface Props {
     text: string;
 }
 
+function Tooltip({ children, text }: Props) {
+    const [show, setShow] = useState(false);
+
+    return (
+        <StyledWrap>
+            <StyledBlock onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
+                {children}
+            </StyledBlock>
+            <StyledTooltip isShow={show}>{text}</StyledTooltip>
+        </StyledWrap>
+    );
+}
+
+export default Tooltip;
+
 const StyledWrap = styled.div`
     position: relative;
     display: flex;
@@ -39,18 +54,3 @@ const StyledBlock = styled.div`
     border-radius: 4px;
     overflow: hidden;
 `;
-
-function Tooltip({ children, text }: Props) {
-    const [show, setShow] = useState(false);
-
-    return (
-        <StyledWrap>
-            <StyledBlock onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
-                {children}
-            </StyledBlock>
-            <StyledTooltip isShow={show}>{text}</StyledTooltip>
-        </StyledWrap>
-    );
-}
-
-export default Tooltip;
