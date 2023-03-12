@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import Canvas from "./Canvas";
 import LeftBar from "./LeftBar";
+import { useState } from "react";
 
 const StyledMain = styled.main`
     display: flex;
@@ -8,9 +9,14 @@ const StyledMain = styled.main`
 `;
 
 function Main() {
+    const [tool, setTool] = useState<Tool>("select");
+    const handleToolChange = (newTool: Tool) => {
+        setTool(newTool);
+    };
+
     return (
         <StyledMain>
-            <LeftBar />
+            <LeftBar tool={tool} onToolChange={handleToolChange} />
             <Canvas />
         </StyledMain>
     );

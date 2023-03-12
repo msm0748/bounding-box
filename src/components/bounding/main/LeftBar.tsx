@@ -2,6 +2,11 @@ import styled from "styled-components";
 import Button from "../../common/button";
 import Tooltip from "../../common/tooltip";
 
+interface Props {
+    tool: Tool;
+    onToolChange: (newTool: Tool) => void;
+}
+
 const StyledWrapper = styled.div`
     display: flex;
     flex-direction: column;
@@ -38,12 +43,15 @@ const topButtonProps = {
     hoverBg: "rgb(235, 236, 239)",
 };
 
-function LeftBar() {
+function LeftBar({ tool, onToolChange }: Props) {
+    const handleToolClick = (newTool: Tool) => {
+        onToolChange(newTool);
+    };
     return (
         <StyledWrapper>
             <StyledTopWrap>
                 <Tooltip text="선택하기 V">
-                    <Button {...topButtonProps}>
+                    <Button onClick={() => handleToolClick("select")} active={tool === "select"} {...topButtonProps}>
                         <svg width="24" height="24" fill="#50555A" xmlns="http://www.w3.org/2000/svg" fillOpacity="1" viewBox="0 0 96 96">
                             <path
                                 d="M29.713 10.757c-.623-.638-1.7-.188-1.694.707l.461 63.255c.007.905 1.11 1.334 1.718.668l12.814-14.038a.986.986 0 0 1 1.643.294l9.937 24.199c.209.509.788.75 1.293.54l6.644-2.777a1 1 0 0 0 .535-1.302l-9.94-24.2a.996.996 0 0 1 .956-1.378l18.906.786c.897.037 1.376-1.05.746-1.695L29.713 10.757Z"
@@ -54,7 +62,7 @@ function LeftBar() {
                     </Button>
                 </Tooltip>
                 <Tooltip text="이동하기 M">
-                    <Button {...topButtonProps}>
+                    <Button onClick={() => handleToolClick("move")} active={tool === "move"} {...topButtonProps}>
                         <svg width="24" height="24" fill="#50555A" xmlns="http://www.w3.org/2000/svg" fillOpacity="1" viewBox="0 0 96 96">
                             <path
                                 fillRule="evenodd"
@@ -70,7 +78,7 @@ function LeftBar() {
                 <StyledLine />
 
                 <Tooltip text="바운딩 박스 B">
-                    <Button {...topButtonProps}>
+                    <Button onClick={() => handleToolClick("bounding")} active={tool === "bounding"} {...topButtonProps}>
                         <svg width="24" height="24" fill="#50555A" xmlns="http://www.w3.org/2000/svg" fillOpacity="1" viewBox="0 0 96 96">
                             <path
                                 fillRule="evenodd"
