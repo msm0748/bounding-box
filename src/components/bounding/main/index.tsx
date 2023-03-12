@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import Canvas from "./Canvas";
 import LeftBar from "./LeftBar";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 const StyledMain = styled.main`
     display: flex;
@@ -10,14 +10,19 @@ const StyledMain = styled.main`
 
 function Main() {
     const [tool, setTool] = useState<Tool>("select");
-    const handleToolChange = (newTool: Tool) => {
+    const [reset, setReset] = useState(false);
+
+    const handleToolChange = useCallback((newTool: Tool) => {
         setTool(newTool);
-    };
+    }, []);
+    const setIsReset = useCallback((isReset: boolean) => {
+        setReset(isReset);
+    }, []);
 
     return (
         <StyledMain>
-            <LeftBar tool={tool} onToolChange={handleToolChange} />
-            <Canvas />
+            <LeftBar tool={tool} onToolChange={handleToolChange} setIsReset={setIsReset} />
+            <Canvas reset={reset} setIsReset={setIsReset} />
         </StyledMain>
     );
 }
