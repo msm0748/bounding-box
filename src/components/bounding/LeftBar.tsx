@@ -48,7 +48,7 @@ function LeftBar({ tool, setTool, setIsReset }: Props) {
             document.removeEventListener("keydown", handleKeyDown);
         };
     }, [setTool, setIsReset]);
-    console.log("렌더");
+
     return (
         <StyledWrap>
             <div>

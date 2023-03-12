@@ -180,6 +180,7 @@ function Canvas({
                 const zoom = 1 - event.deltaY / ZOOM_SENSITIVITY;
 
                 const newScale = scale * zoom;
+                console.log(newScale);
                 if (MIN_SCALE > newScale || newScale > MAX_SCALE) return;
 
                 const viewportTopLeftDelta = {

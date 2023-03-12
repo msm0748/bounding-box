@@ -299,9 +299,9 @@ function Canvas({
     const handleMouseDown = useCallback(
         (e: React.MouseEvent) => {
             if (e.button !== 0) return;
+            const { offsetX, offsetY } = e.nativeEvent;
             handleZoomMouseDown(e);
             if (isImageMove) return;
-            const { offsetX, offsetY } = e.nativeEvent;
             if (tool === "bounding") {
                 setAction("drawing");
                 if (action !== "none") return;
@@ -338,6 +338,7 @@ function Canvas({
             handleZoomMouseMove(e);
             if (isImageMove) return;
             if (tool === "bounding") {
+                setMouseOverElement(undefined);
                 if (action === "drawing") {
                     const { zoomPosX, zoomPosY } = getZoomPosition(offsetX, offsetY);
                     const index = elements.length - 1;
@@ -347,6 +348,7 @@ function Canvas({
             } else if (tool === "select") {
                 const element = getElementPosition(offsetX, offsetY);
                 setMouseOverElement(element);
+                console.log(element);
                 if (action === "none") {
                     mouseCursorStyle(element ? cursorForPosition(element.position!) : "default");
                 }
