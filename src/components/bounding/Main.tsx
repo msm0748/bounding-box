@@ -40,6 +40,7 @@ function Main() {
     const [mouseOverElement, setMouseOverElement] = useState<ISelectedElement | undefined>(undefined);
     const [imageIndex, setImageIndex] = useState(0);
 
+    console.log("렌더");
     useEffect(() => {
         image.src = imageList[imageIndex];
         image.onload = () => {
