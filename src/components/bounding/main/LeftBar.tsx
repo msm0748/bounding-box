@@ -1,6 +1,6 @@
 import styled from "styled-components";
-import Button from "../common/button";
-import Tooltip from "../common/tooltip";
+import Button from "../../common/button";
+import Tooltip from "../../common/tooltip";
 
 const StyledWrapper = styled.div`
     display: flex;
