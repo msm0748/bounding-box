@@ -1,67 +1,53 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { MutableRefObject, RefObject, useCallback, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
-import { INITIAL_SIZE, INITIAL_POSITION } from "./defaults";
+import { INITIAL_POSITION } from "./defaults";
 
 interface Props {
+    canvasRef: RefObject<HTMLCanvasElement>;
+    imageRef: MutableRefObject<HTMLImageElement>;
     reset: boolean;
     setIsReset: (isReset: boolean) => void;
     tool: Tool;
+    ctx: CanvasRenderingContext2D | null;
+    scaleRef: MutableRefObject<number>;
+    setScaleRef: (value: number) => void;
+    viewPosRef: MutableRefObject<Position>;
+    setViewPosRef: ({ x, y }: Position) => void;
+    updateCanvasSize: ({ width, height }: Size) => void;
+    draw: () => void;
 }
 
 const MIN_SCALE = 0.1;
 const MAX_SCALE = 10;
 
-function Canvas({ reset, setIsReset, tool }: Props) {
+function Canvas({ canvasRef, imageRef, ctx, reset, setIsReset, tool, scaleRef, setScaleRef, viewPosRef, setViewPosRef, updateCanvasSize, draw }: Props) {
     const wrapperRef = useRef<HTMLDivElement>(null);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const imgRef = useRef<HTMLImageElement>(new Image());
-    const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
-    const [canvasSize, setCanvasSize] = useState(INITIAL_SIZE);
     const isTouchRef = useRef(false);
-    const viewPosRef = useRef(INITIAL_POSITION);
     const startPosRef = useRef(INITIAL_POSITION);
-    const scaleRef = useRef(1);
     const [isImageMove, setIsImageMove] = useState(false);
     const [isGrabbing, setIsGrabbing] = useState(false);
 
-    // init
+    // setting canvasSize
     useEffect(() => {
-        if (!wrapperRef.current || !canvasRef.current) return;
+        if (!wrapperRef.current) return;
         const width = wrapperRef.current.offsetWidth;
         const height = wrapperRef.current.offsetHeight;
-        setCanvasSize({ width, height });
-        const canvas = canvasRef.current;
-        canvas.width = width;
-        canvas.height = height;
-        const context = canvas.getContext("2d");
-        setCtx(context);
-    }, []);
-
-    const draw = useCallback(() => {
-        if (!ctx) return;
-        ctx.canvas.width = canvasSize.width;
-        ctx.setTransform(scaleRef.current, 0, 0, scaleRef.current, viewPosRef.current.x, viewPosRef.current.y);
-        ctx.drawImage(imgRef.current, 0, 0, canvasSize.width, canvasSize.height);
-    }, [ctx, canvasSize]);
+        updateCanvasSize({ width, height });
+    }, [updateCanvasSize]);
 
     const resetCanvas = useCallback(() => {
-        if (!ctx) return;
-        scaleRef.current = 1;
+        setScaleRef(1);
         isTouchRef.current = false;
-        viewPosRef.current = INITIAL_POSITION;
+        setViewPosRef(INITIAL_POSITION);
         startPosRef.current = INITIAL_POSITION;
         draw();
-    }, [ctx, draw]);
+    }, [draw, setScaleRef, setViewPosRef]);
 
     // reset
     useEffect(() => {
-        const img = imgRef.current;
-        img.src = "https://s3.marpple.co/files/u_218933/2020/1/original/14474423ccd1acb63fab43dc936ab01302c64b547577e2e.png";
-        img.onload = function () {
-            resetCanvas();
-        };
+        resetCanvas();
         setIsReset(false);
-    }, [resetCanvas, reset, setIsReset]);
+    }, [resetCanvas, reset, setIsReset, imageRef]);
 
     const setImagePositionOnMouseDown = (offsetX: number, offsetY: number) => {
         startPosRef.current = {
@@ -82,10 +68,9 @@ function Canvas({ reset, setIsReset, tool }: Props) {
 
     const moveImageByMousePosition = (offsetX: number, offsetY: number) => {
         if (isTouchRef.current === false) return;
-        viewPosRef.current = {
-            x: offsetX - startPosRef.current.x,
-            y: offsetY - startPosRef.current.y,
-        };
+        const x = offsetX - startPosRef.current.x;
+        const y = offsetY - startPosRef.current.y;
+        setViewPosRef({ x, y });
     };
 
     const handleMouseMove = (e: React.MouseEvent) => {
@@ -109,22 +94,19 @@ function Canvas({ reset, setIsReset, tool }: Props) {
         const ys = (offsetY - viewPosRef.current.y) / scaleRef.current;
 
         if (deltaY > 0 && scaleRef.current < MAX_SCALE) {
-            scaleRef.current *= ZOOM_SENSITIVITY;
+            setScaleRef(scaleRef.current * ZOOM_SENSITIVITY);
         } else if (deltaY < 0 && scaleRef.current > MIN_SCALE) {
-            scaleRef.current /= ZOOM_SENSITIVITY;
+            setScaleRef(scaleRef.current / ZOOM_SENSITIVITY);
         }
-
-        viewPosRef.current = {
-            x: offsetX - xs * scaleRef.current,
-            y: offsetY - ys * scaleRef.current,
-        };
+        const x = offsetX - xs * scaleRef.current;
+        const y = offsetY - ys * scaleRef.current;
+        setViewPosRef({ x, y });
     };
 
     const moveImageByWheel = (deltaY: number, deltaX: number) => {
-        viewPosRef.current = {
-            x: viewPosRef.current.x - deltaX,
-            y: viewPosRef.current.y + deltaY,
-        };
+        const x = viewPosRef.current.x + deltaX;
+        const y = viewPosRef.current.y + deltaY;
+        setViewPosRef({ x, y });
     };
 
     const handleWheel = (e: React.WheelEvent) => {
@@ -195,7 +177,7 @@ function Canvas({ reset, setIsReset, tool }: Props) {
         return () => {
             canvas.removeEventListener("wheel", preventDefault);
         };
-    }, []);
+    }, [canvasRef]);
 
     return (
         <StyledWrapper ref={wrapperRef}>
