@@ -102,18 +102,15 @@ function Canvas({ reset, setIsReset, tool }: Props) {
         setIsGrabbing(false);
     };
 
-    const handleWheel = (e: React.WheelEvent) => {
-        const { offsetX, offsetY } = e.nativeEvent;
+    const zoomImageByWheel = (offsetX: number, offsetY: number, deltaY: number) => {
+        const ZOOM_SENSITIVITY = 1.025;
 
         const xs = (offsetX - viewPosRef.current.x) / scaleRef.current;
         const ys = (offsetY - viewPosRef.current.y) / scaleRef.current;
 
-        const delta = -e.deltaY;
-        const ZOOM_SENSITIVITY = 1.025;
-
-        if (delta > 0 && scaleRef.current < MAX_SCALE) {
+        if (deltaY > 0 && scaleRef.current < MAX_SCALE) {
             scaleRef.current *= ZOOM_SENSITIVITY;
-        } else if (delta < 0 && scaleRef.current > MIN_SCALE) {
+        } else if (deltaY < 0 && scaleRef.current > MIN_SCALE) {
             scaleRef.current /= ZOOM_SENSITIVITY;
         }
 
@@ -121,6 +118,26 @@ function Canvas({ reset, setIsReset, tool }: Props) {
             x: offsetX - xs * scaleRef.current,
             y: offsetY - ys * scaleRef.current,
         };
+    };
+
+    const moveImageByWheel = (deltaY: number, deltaX: number) => {
+        viewPosRef.current = {
+            x: viewPosRef.current.x - deltaX,
+            y: viewPosRef.current.y + deltaY,
+        };
+    };
+
+    const handleWheel = (e: React.WheelEvent) => {
+        const { offsetX, offsetY } = e.nativeEvent;
+
+        const deltaY = -e.deltaY;
+        const deltaX = -e.deltaX;
+
+        if (e.ctrlKey === true || e.metaKey === true) {
+            zoomImageByWheel(offsetX, offsetY, deltaY);
+        } else {
+            moveImageByWheel(deltaY, deltaX);
+        }
 
         requestAnimationFrame(draw);
     };
@@ -130,7 +147,7 @@ function Canvas({ reset, setIsReset, tool }: Props) {
         wrapperRef.current.style.cursor = name;
     }, []);
 
-    // mouse cursor style
+    // Setting mouse cursor style
     useEffect(() => {
         if (tool === "move" || isImageMove === true) {
             mouseCursorStyle("grab");
@@ -142,7 +159,7 @@ function Canvas({ reset, setIsReset, tool }: Props) {
         }
     }, [tool, isImageMove, isGrabbing, mouseCursorStyle]);
 
-    // image move
+    // Deciding whether to move an image.
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.code === "Space") {
