@@ -63,13 +63,16 @@ function Canvas({ reset, setIsReset, tool }: Props) {
         setIsReset(false);
     }, [resetCanvas, reset, setIsReset]);
 
-    const handleMouseDown = (e: React.MouseEvent) => {
-        const { offsetX, offsetY } = e.nativeEvent;
-
+    const setImagePositionOnMouseDown = (offsetX: number, offsetY: number) => {
         startPosRef.current = {
             x: offsetX - viewPosRef.current.x,
             y: offsetY - viewPosRef.current.y,
         };
+    };
+
+    const handleMouseDown = (e: React.MouseEvent) => {
+        const { offsetX, offsetY } = e.nativeEvent;
+        setImagePositionOnMouseDown(offsetX, offsetY);
 
         isTouchRef.current = true;
         if (isImageMove === true || tool === "move") {
@@ -77,15 +80,18 @@ function Canvas({ reset, setIsReset, tool }: Props) {
         }
     };
 
+    const moveImageByMousePosition = (offsetX: number, offsetY: number) => {
+        if (isTouchRef.current === false) return;
+        viewPosRef.current = {
+            x: offsetX - startPosRef.current.x,
+            y: offsetY - startPosRef.current.y,
+        };
+    };
+
     const handleMouseMove = (e: React.MouseEvent) => {
         const { offsetX, offsetY } = e.nativeEvent;
         if (isGrabbing === true || tool === "move") {
-            if (isTouchRef.current) {
-                viewPosRef.current = {
-                    x: offsetX - startPosRef.current.x,
-                    y: offsetY - startPosRef.current.y,
-                };
-            }
+            moveImageByMousePosition(offsetX, offsetY);
         }
 
         requestAnimationFrame(draw);
@@ -124,7 +130,7 @@ function Canvas({ reset, setIsReset, tool }: Props) {
         wrapperRef.current.style.cursor = name;
     }, []);
 
-    //mouse cursor style
+    // mouse cursor style
     useEffect(() => {
         if (tool === "move" || isImageMove === true) {
             mouseCursorStyle("grab");
