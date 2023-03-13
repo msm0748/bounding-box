@@ -5,12 +5,13 @@ import { INITIAL_SIZE, INITIAL_POSITION } from "./defaults";
 interface Props {
     reset: boolean;
     setIsReset: (isReset: boolean) => void;
+    tool: Tool;
 }
 
 const MIN_SCALE = 0.1;
 const MAX_SCALE = 10;
 
-function Canvas({ reset, setIsReset }: Props) {
+function Canvas({ reset, setIsReset, tool }: Props) {
     const wrapperRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const imgRef = useRef<HTMLImageElement>(new Image());
@@ -20,6 +21,8 @@ function Canvas({ reset, setIsReset }: Props) {
     const viewPosRef = useRef(INITIAL_POSITION);
     const startPosRef = useRef(INITIAL_POSITION);
     const scaleRef = useRef(1);
+    const [isImageMove, setIsImageMove] = useState(false);
+    const [isGrabbing, setIsGrabbing] = useState(false);
 
     // init
     useEffect(() => {
@@ -69,23 +72,28 @@ function Canvas({ reset, setIsReset }: Props) {
         };
 
         isTouchRef.current = true;
+        if (isImageMove === true || tool === "move") {
+            setIsGrabbing(true);
+        }
     };
 
     const handleMouseMove = (e: React.MouseEvent) => {
         const { offsetX, offsetY } = e.nativeEvent;
-
-        if (isTouchRef.current) {
-            viewPosRef.current = {
-                x: offsetX - startPosRef.current.x,
-                y: offsetY - startPosRef.current.y,
-            };
+        if (isGrabbing === true || tool === "move") {
+            if (isTouchRef.current) {
+                viewPosRef.current = {
+                    x: offsetX - startPosRef.current.x,
+                    y: offsetY - startPosRef.current.y,
+                };
+            }
         }
 
-        draw();
+        requestAnimationFrame(draw);
     };
 
     const handleMouseUp = () => {
         isTouchRef.current = false;
+        setIsGrabbing(false);
     };
 
     const handleWheel = (e: React.WheelEvent) => {
@@ -108,9 +116,50 @@ function Canvas({ reset, setIsReset }: Props) {
             y: offsetY - ys * scaleRef.current,
         };
 
-        draw();
+        requestAnimationFrame(draw);
     };
 
+    const mouseCursorStyle = useCallback((name: string) => {
+        if (!wrapperRef.current) return;
+        wrapperRef.current.style.cursor = name;
+    }, []);
+
+    //mouse cursor style
+    useEffect(() => {
+        if (tool === "move" || isImageMove === true) {
+            mouseCursorStyle("grab");
+            if (isGrabbing === true) {
+                mouseCursorStyle("grabbing");
+            }
+        } else {
+            mouseCursorStyle("default");
+        }
+    }, [tool, isImageMove, isGrabbing, mouseCursorStyle]);
+
+    // image move
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.code === "Space") {
+                setIsImageMove(true);
+            }
+        };
+
+        const handleKeyUp = (e: KeyboardEvent) => {
+            if (e.code === "Space") {
+                setIsImageMove(false);
+                setIsGrabbing(false);
+            }
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+        document.addEventListener("keyup", handleKeyUp);
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+            document.removeEventListener("keyup", handleKeyUp);
+        };
+    }, []);
+
+    // Preventing the entire web page from zooming in when using a laptop touchpad to zoom in an image.
     useEffect(() => {
         if (!canvasRef.current) return;
         const canvas = canvasRef.current;

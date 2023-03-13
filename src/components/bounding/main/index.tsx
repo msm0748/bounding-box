@@ -17,7 +17,7 @@ function Main() {
     return (
         <StyledMain>
             <LeftBar tool={tool} onToolChange={handleToolChange} setIsReset={setIsReset} />
-            <Canvas reset={reset} setIsReset={setIsReset} />
+            <Canvas tool={tool} reset={reset} setIsReset={setIsReset} />
         </StyledMain>
     );
 }
