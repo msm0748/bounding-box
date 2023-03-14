@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, MutableRefObject, useCallback } from "react";
 import styled from "styled-components";
 import Button from "../../common/button";
 import Tooltip from "../../common/tooltip";
@@ -7,6 +7,12 @@ interface Props {
     tool: Tool;
     onToolChange: (newTool: Tool) => void;
     setIsReset: (isReset: boolean) => void;
+    scaleRef: MutableRefObject<number>;
+    setScaleRef: (type: Zoom) => void;
+    draw: () => void;
+    canvasSize: Size;
+    viewPosRef: MutableRefObject<Position>;
+    setViewPosRef: ({ x, y }: Position) => void;
 }
 
 const buttonProps = {
@@ -19,7 +25,31 @@ const topButtonProps = {
     hoverBg: "rgb(235, 236, 239)",
 };
 
-function LeftBar({ tool, onToolChange, setIsReset }: Props) {
+function LeftBar({ tool, onToolChange, setIsReset, scaleRef, setScaleRef, draw, canvasSize, viewPosRef, setViewPosRef }: Props) {
+    const zoomPoint = useCallback(
+        (type: Zoom) => {
+            const currentImageMedianX = viewPosRef.current.x + (canvasSize.width * scaleRef.current) / 2;
+            const currentImageMedianY = viewPosRef.current.y + (canvasSize.height * scaleRef.current) / 2;
+            const xs = (currentImageMedianX - viewPosRef.current.x) / scaleRef.current;
+            const ys = (currentImageMedianY - viewPosRef.current.y) / scaleRef.current;
+
+            setScaleRef(type);
+
+            const x = currentImageMedianX - xs * scaleRef.current;
+            const y = currentImageMedianY - ys * scaleRef.current;
+
+            setViewPosRef({ x, y });
+            requestAnimationFrame(draw);
+        },
+        [canvasSize, scaleRef, setScaleRef, setViewPosRef, viewPosRef, draw]
+    );
+
+    const handleZoomIn = useCallback(() => {
+        zoomPoint("zoomIn");
+    }, [zoomPoint]);
+    const handleZoomOut = useCallback(() => {
+        zoomPoint("zoomOut");
+    }, [zoomPoint]);
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             switch (e.code) {
@@ -37,6 +67,12 @@ function LeftBar({ tool, onToolChange, setIsReset }: Props) {
                         setIsReset(true);
                     }
                     break;
+                case "Equal":
+                    handleZoomIn();
+                    break;
+                case "Minus":
+                    handleZoomOut();
+                    break;
                 default:
                     break;
             }
@@ -45,7 +81,7 @@ function LeftBar({ tool, onToolChange, setIsReset }: Props) {
         return () => {
             document.removeEventListener("keydown", handleKeyDown);
         };
-    }, [onToolChange, setIsReset]);
+    }, [onToolChange, setIsReset, handleZoomIn, handleZoomOut]);
 
     return (
         <StyledWrapper>
@@ -94,7 +130,7 @@ function LeftBar({ tool, onToolChange, setIsReset }: Props) {
 
             <StyledBottomWrap>
                 <Tooltip text="확대하기 +">
-                    <Button {...buttonProps}>
+                    <Button onClick={handleZoomIn} {...buttonProps}>
                         <svg width="24" height="24" fill="rgba(26,26,26,0.8)" fillOpacity="1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
                             <path
                                 fillRule="evenodd"
@@ -105,7 +141,7 @@ function LeftBar({ tool, onToolChange, setIsReset }: Props) {
                     </Button>
                 </Tooltip>
                 <Tooltip text="축소하기 -">
-                    <Button {...buttonProps}>
+                    <Button onClick={handleZoomOut} {...buttonProps}>
                         <svg width="24" height="24" fill="rgba(26,26,26,0.8)" fillOpacity="1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
                             <path
                                 fillRule="evenodd"

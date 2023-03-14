@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, useRef } from "react";
 import styled from "styled-components";
 import Canvas from "./Canvas";
 import LeftBar from "./LeftBar";
-import { INITIAL_POSITION, INITIAL_SIZE } from "./defaults";
+import { INITIAL_POSITION, INITIAL_SIZE, MIN_SCALE, MAX_SCALE, ZOOM_SENSITIVITY, INITIAL_SCALE } from "./defaults";
 
 function Main() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -11,7 +11,7 @@ function Main() {
     const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
     const [tool, setTool] = useState<Tool>("select");
     const [reset, setReset] = useState(false);
-    const scaleRef = useRef(1);
+    const scaleRef = useRef(INITIAL_SCALE);
     const viewPosRef = useRef(INITIAL_POSITION);
 
     // init
@@ -28,7 +28,12 @@ function Main() {
         if (!ctx) return;
         ctx.clearRect(0, 0, canvasSize.width, canvasSize.height);
         ctx.setTransform(scaleRef.current, 0, 0, scaleRef.current, viewPosRef.current.x, viewPosRef.current.y);
-        ctx.drawImage(imageRef.current, 0, 0, canvasSize.width, canvasSize.height);
+        const currentImageWidth = canvasSize.width;
+        const currentImageHeight = (canvasSize.width * imageRef.current.height) / imageRef.current.width;
+
+        const currentImagePosY = (canvasSize.height - currentImageHeight) / 2;
+
+        ctx.drawImage(imageRef.current, 0, currentImagePosY, currentImageWidth, currentImageHeight);
     }, [ctx, canvasSize]);
 
     // draw init
@@ -44,8 +49,14 @@ function Main() {
         setCanvasSize({ width, height });
     }, []);
 
-    const setScaleRef = useCallback((value: number) => {
-        scaleRef.current = value;
+    const setScaleRef = useCallback((type: Zoom) => {
+        if (type === "zoomIn" && scaleRef.current < MAX_SCALE) {
+            scaleRef.current = scaleRef.current * ZOOM_SENSITIVITY;
+        } else if (type === "zoomOut" && scaleRef.current > MIN_SCALE) {
+            scaleRef.current = scaleRef.current / ZOOM_SENSITIVITY;
+        } else if (type === "reset") {
+            scaleRef.current = INITIAL_SCALE;
+        }
     }, []);
 
     const setViewPosRef = useCallback(({ x, y }: Position) => {
@@ -64,7 +75,17 @@ function Main() {
 
     return (
         <StyledMain>
-            <LeftBar tool={tool} onToolChange={handleToolChange} setIsReset={setIsReset} />
+            <LeftBar
+                tool={tool}
+                onToolChange={handleToolChange}
+                setIsReset={setIsReset}
+                viewPosRef={viewPosRef}
+                canvasSize={canvasSize}
+                scaleRef={scaleRef}
+                setScaleRef={setScaleRef}
+                draw={draw}
+                setViewPosRef={setViewPosRef}
+            />
             <Canvas
                 canvasRef={canvasRef}
                 imageRef={imageRef}

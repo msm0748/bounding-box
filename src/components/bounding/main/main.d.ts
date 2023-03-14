@@ -8,3 +8,5 @@ type Size = {
     width: number;
     height: number;
 };
+
+type Zoom = "zoomIn" | "zoomOut" | "reset";

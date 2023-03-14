@@ -10,15 +10,12 @@ interface Props {
     tool: Tool;
     ctx: CanvasRenderingContext2D | null;
     scaleRef: MutableRefObject<number>;
-    setScaleRef: (value: number) => void;
+    setScaleRef: (type: Zoom) => void;
     viewPosRef: MutableRefObject<Position>;
     setViewPosRef: ({ x, y }: Position) => void;
     updateCanvasSize: ({ width, height }: Size) => void;
     draw: () => void;
 }
-
-const MIN_SCALE = 0.1;
-const MAX_SCALE = 10;
 
 function Canvas({ canvasRef, imageRef, ctx, reset, setIsReset, tool, scaleRef, setScaleRef, viewPosRef, setViewPosRef, updateCanvasSize, draw }: Props) {
     const wrapperRef = useRef<HTMLDivElement>(null);
@@ -36,7 +33,7 @@ function Canvas({ canvasRef, imageRef, ctx, reset, setIsReset, tool, scaleRef, s
     }, [updateCanvasSize]);
 
     const resetCanvas = useCallback(() => {
-        setScaleRef(1);
+        setScaleRef("reset");
         isTouchRef.current = false;
         setViewPosRef(INITIAL_POSITION);
         startPosRef.current = INITIAL_POSITION;
@@ -88,15 +85,13 @@ function Canvas({ canvasRef, imageRef, ctx, reset, setIsReset, tool, scaleRef, s
     };
 
     const zoomImageByWheel = (offsetX: number, offsetY: number, deltaY: number) => {
-        const ZOOM_SENSITIVITY = 1.025;
-
         const xs = (offsetX - viewPosRef.current.x) / scaleRef.current;
         const ys = (offsetY - viewPosRef.current.y) / scaleRef.current;
 
-        if (deltaY > 0 && scaleRef.current < MAX_SCALE) {
-            setScaleRef(scaleRef.current * ZOOM_SENSITIVITY);
-        } else if (deltaY < 0 && scaleRef.current > MIN_SCALE) {
-            setScaleRef(scaleRef.current / ZOOM_SENSITIVITY);
+        if (deltaY > 0) {
+            setScaleRef("zoomIn");
+        } else if (deltaY < 0) {
+            setScaleRef("zoomOut");
         }
         const x = offsetX - xs * scaleRef.current;
         const y = offsetY - ys * scaleRef.current;
@@ -181,7 +176,13 @@ function Canvas({ canvasRef, imageRef, ctx, reset, setIsReset, tool, scaleRef, s
 
     return (
         <StyledWrapper ref={wrapperRef}>
-            <canvas ref={canvasRef} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onWheel={handleWheel}></canvas>
+            <StyledCanvas
+                ref={canvasRef}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onWheel={handleWheel}
+            ></StyledCanvas>
         </StyledWrapper>
     );
 }
@@ -190,4 +191,8 @@ export default Canvas;
 
 const StyledWrapper = styled.div`
     flex: 1;
+`;
+
+const StyledCanvas = styled.canvas`
+    background: gray;
 `;
