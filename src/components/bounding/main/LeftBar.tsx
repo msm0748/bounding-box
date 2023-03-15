@@ -8,7 +8,7 @@ interface Props {
     onToolChange: (newTool: Tool) => void;
     setIsReset: (isReset: boolean) => void;
     scaleRef: MutableRefObject<number>;
-    setScaleRef: (type: Zoom) => void;
+    handleZoom: (type: Zoom) => void;
     draw: () => void;
     canvasSize: Size;
     viewPosRef: MutableRefObject<Position>;
@@ -25,7 +25,7 @@ const topButtonProps = {
     hoverBg: "rgb(235, 236, 239)",
 };
 
-function LeftBar({ tool, onToolChange, setIsReset, scaleRef, setScaleRef, draw, canvasSize, viewPosRef, setViewPosRef }: Props) {
+function LeftBar({ tool, onToolChange, setIsReset, scaleRef, handleZoom, draw, canvasSize, viewPosRef, setViewPosRef }: Props) {
     const zoomPoint = useCallback(
         (type: Zoom) => {
             const currentImageMedianX = viewPosRef.current.x + (canvasSize.width * scaleRef.current) / 2;
@@ -33,7 +33,7 @@ function LeftBar({ tool, onToolChange, setIsReset, scaleRef, setScaleRef, draw, 
             const xs = (currentImageMedianX - viewPosRef.current.x) / scaleRef.current;
             const ys = (currentImageMedianY - viewPosRef.current.y) / scaleRef.current;
 
-            setScaleRef(type);
+            handleZoom(type);
 
             const x = currentImageMedianX - xs * scaleRef.current;
             const y = currentImageMedianY - ys * scaleRef.current;
@@ -41,7 +41,7 @@ function LeftBar({ tool, onToolChange, setIsReset, scaleRef, setScaleRef, draw, 
             setViewPosRef({ x, y });
             requestAnimationFrame(draw);
         },
-        [canvasSize, scaleRef, setScaleRef, setViewPosRef, viewPosRef, draw]
+        [canvasSize, scaleRef, handleZoom, setViewPosRef, viewPosRef, draw]
     );
 
     const handleZoomIn = useCallback(() => {

@@ -49,13 +49,23 @@ function Main() {
         setCanvasSize({ width, height });
     }, []);
 
-    const setScaleRef = useCallback((type: Zoom) => {
-        if (type === "zoomIn" && scaleRef.current < MAX_SCALE) {
-            scaleRef.current = scaleRef.current * ZOOM_SENSITIVITY;
-        } else if (type === "zoomOut" && scaleRef.current > MIN_SCALE) {
-            scaleRef.current = scaleRef.current / ZOOM_SENSITIVITY;
-        } else if (type === "reset") {
-            scaleRef.current = INITIAL_SCALE;
+    const handleZoom = useCallback((type: Zoom) => {
+        switch (type) {
+            case "zoomIn":
+                if (scaleRef.current < MAX_SCALE) {
+                    scaleRef.current = scaleRef.current * ZOOM_SENSITIVITY;
+                }
+                break;
+            case "zoomOut":
+                if (scaleRef.current > MIN_SCALE) {
+                    scaleRef.current = scaleRef.current / ZOOM_SENSITIVITY;
+                }
+                break;
+            case "reset":
+                scaleRef.current = INITIAL_SCALE;
+                break;
+            default:
+                break;
         }
     }, []);
 
@@ -82,7 +92,7 @@ function Main() {
                 viewPosRef={viewPosRef}
                 canvasSize={canvasSize}
                 scaleRef={scaleRef}
-                setScaleRef={setScaleRef}
+                handleZoom={handleZoom}
                 draw={draw}
                 setViewPosRef={setViewPosRef}
             />
@@ -94,7 +104,7 @@ function Main() {
                 reset={reset}
                 setIsReset={setIsReset}
                 scaleRef={scaleRef}
-                setScaleRef={setScaleRef}
+                handleZoom={handleZoom}
                 viewPosRef={viewPosRef}
                 setViewPosRef={setViewPosRef}
                 updateCanvasSize={updateCanvasSize}

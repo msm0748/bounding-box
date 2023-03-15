@@ -1,6 +1,7 @@
 import { MutableRefObject, RefObject, useCallback, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { INITIAL_POSITION } from "./defaults";
+import { zoomMouseDown, zoomMouseMove, zoomMouseUp, zoomWheel } from "./utils/imageZoomUtils";
 
 interface Props {
     canvasRef: RefObject<HTMLCanvasElement>;
@@ -10,14 +11,14 @@ interface Props {
     tool: Tool;
     ctx: CanvasRenderingContext2D | null;
     scaleRef: MutableRefObject<number>;
-    setScaleRef: (type: Zoom) => void;
+    handleZoom: (type: Zoom) => void;
     viewPosRef: MutableRefObject<Position>;
     setViewPosRef: ({ x, y }: Position) => void;
     updateCanvasSize: ({ width, height }: Size) => void;
     draw: () => void;
 }
 
-function Canvas({ canvasRef, imageRef, ctx, reset, setIsReset, tool, scaleRef, setScaleRef, viewPosRef, setViewPosRef, updateCanvasSize, draw }: Props) {
+function Canvas({ canvasRef, imageRef, ctx, reset, setIsReset, tool, scaleRef, handleZoom, viewPosRef, setViewPosRef, updateCanvasSize, draw }: Props) {
     const wrapperRef = useRef<HTMLDivElement>(null);
     const isTouchRef = useRef(false);
     const startPosRef = useRef(INITIAL_POSITION);
@@ -33,12 +34,12 @@ function Canvas({ canvasRef, imageRef, ctx, reset, setIsReset, tool, scaleRef, s
     }, [updateCanvasSize]);
 
     const resetCanvas = useCallback(() => {
-        setScaleRef("reset");
+        handleZoom("reset");
         isTouchRef.current = false;
         setViewPosRef(INITIAL_POSITION);
         startPosRef.current = INITIAL_POSITION;
         draw();
-    }, [draw, setScaleRef, setViewPosRef]);
+    }, [draw, handleZoom, setViewPosRef]);
 
     // reset
     useEffect(() => {
@@ -46,76 +47,30 @@ function Canvas({ canvasRef, imageRef, ctx, reset, setIsReset, tool, scaleRef, s
         setIsReset(false);
     }, [resetCanvas, reset, setIsReset, imageRef]);
 
-    const setImagePositionOnMouseDown = (offsetX: number, offsetY: number) => {
-        startPosRef.current = {
-            x: offsetX - viewPosRef.current.x,
-            y: offsetY - viewPosRef.current.y,
-        };
-    };
-
     const handleMouseDown = (e: React.MouseEvent) => {
         const { offsetX, offsetY } = e.nativeEvent;
-        setImagePositionOnMouseDown(offsetX, offsetY);
-
-        isTouchRef.current = true;
+        zoomMouseDown({ offsetX, offsetY, startPosRef, viewPosRef, isTouchRef });
         if (isImageMove === true || tool === "move") {
             setIsGrabbing(true);
         }
     };
 
-    const moveImageByMousePosition = (offsetX: number, offsetY: number) => {
-        if (isTouchRef.current === false) return;
-        const x = offsetX - startPosRef.current.x;
-        const y = offsetY - startPosRef.current.y;
-        setViewPosRef({ x, y });
-    };
-
     const handleMouseMove = (e: React.MouseEvent) => {
         const { offsetX, offsetY } = e.nativeEvent;
         if (isGrabbing === true || tool === "move") {
-            moveImageByMousePosition(offsetX, offsetY);
+            zoomMouseMove({ offsetX, offsetY, isTouchRef, startPosRef })(setViewPosRef);
         }
 
         requestAnimationFrame(draw);
     };
 
     const handleMouseUp = () => {
-        isTouchRef.current = false;
+        zoomMouseUp(isTouchRef);
         setIsGrabbing(false);
     };
 
-    const zoomImageByWheel = (offsetX: number, offsetY: number, deltaY: number) => {
-        const xs = (offsetX - viewPosRef.current.x) / scaleRef.current;
-        const ys = (offsetY - viewPosRef.current.y) / scaleRef.current;
-
-        if (deltaY > 0) {
-            setScaleRef("zoomIn");
-        } else if (deltaY < 0) {
-            setScaleRef("zoomOut");
-        }
-        const x = offsetX - xs * scaleRef.current;
-        const y = offsetY - ys * scaleRef.current;
-        setViewPosRef({ x, y });
-    };
-
-    const moveImageByWheel = (deltaY: number, deltaX: number) => {
-        const x = viewPosRef.current.x + deltaX;
-        const y = viewPosRef.current.y + deltaY;
-        setViewPosRef({ x, y });
-    };
-
     const handleWheel = (e: React.WheelEvent) => {
-        const { offsetX, offsetY } = e.nativeEvent;
-
-        const deltaY = -e.deltaY;
-        const deltaX = -e.deltaX;
-
-        if (e.ctrlKey === true || e.metaKey === true) {
-            zoomImageByWheel(offsetX, offsetY, deltaY);
-        } else {
-            moveImageByWheel(deltaY, deltaX);
-        }
-
+        zoomWheel(handleZoom)({ e, viewPosRef, scaleRef })(setViewPosRef);
         requestAnimationFrame(draw);
     };
 
