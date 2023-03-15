@@ -13,6 +13,9 @@ function Main() {
     const [reset, setReset] = useState(false);
     const scaleRef = useRef(INITIAL_SCALE);
     const viewPosRef = useRef(INITIAL_POSITION);
+    const newElementRef = useRef<IElement | null>(null);
+    const [elements, setElements] = useState<IElement[]>([]);
+    const [imageInfo, setImageInfo] = useState<IImageInfo | null>(null);
 
     // init
     useEffect(() => {
@@ -24,28 +27,55 @@ function Main() {
         setCtx(context);
     }, [canvasSize]);
 
+    const drawElements = useCallback(
+        (ctx: CanvasRenderingContext2D) => {
+            ctx.lineWidth = 2;
+
+            elements.forEach(({ id, sX, sY, cX, cY }) => {
+                const width = cX - sX;
+                const height = cY - sY;
+                ctx.strokeRect(sX, sY, width, height);
+            });
+
+            if (!newElementRef.current) return;
+            const { sX, sY, cX, cY } = newElementRef.current;
+
+            const width = cX - sX;
+            const height = cY - sY;
+
+            ctx.strokeRect(sX, sY, width, height);
+        },
+        [elements]
+    );
+
     const draw = useCallback(() => {
         if (!ctx) return;
         ctx.clearRect(0, 0, canvasSize.width, canvasSize.height);
         ctx.setTransform(scaleRef.current, 0, 0, scaleRef.current, viewPosRef.current.x, viewPosRef.current.y);
-        const currentImageWidth = canvasSize.width;
-        const currentImageHeight = (canvasSize.width * imageRef.current.height) / imageRef.current.width;
 
-        const currentImagePosY = (canvasSize.height - currentImageHeight) / 2;
+        if (!imageInfo) return;
+        ctx.drawImage(imageRef.current, imageInfo.x, imageInfo.y, imageInfo.width, imageInfo.height);
+        drawElements(ctx);
+    }, [ctx, canvasSize, imageInfo, drawElements]);
 
-        ctx.drawImage(imageRef.current, 0, currentImagePosY, currentImageWidth, currentImageHeight);
-    }, [ctx, canvasSize]);
+    const createElement = ({ id, sX, sY, cX, cY }: IElement) => {
+        newElementRef.current = { id, sX, sY, cX, cY };
+    };
 
-    // draw init
+    // setting image
     useEffect(() => {
         const img = imageRef.current;
         img.src = "https://s3.marpple.co/files/u_218933/2020/1/original/14474423ccd1acb63fab43dc936ab01302c64b547577e2e.png";
         img.onload = () => {
-            draw();
+            const imageWidth = canvasSize.width;
+            const imageHeight = (canvasSize.width * img.height) / img.width;
+            const imagePosX = 0;
+            const imagePosY = (canvasSize.height - imageHeight) / 2;
+            setImageInfo({ src: img.src, x: imagePosX, y: imagePosY, width: imageWidth, height: imageHeight });
         };
-    }, [draw]);
+    }, [canvasSize]);
 
-    const updateCanvasSize = useCallback(({ width, height }: Size) => {
+    const updateCanvasSize = useCallback(({ width, height }: ISize) => {
         setCanvasSize({ width, height });
     }, []);
 
@@ -69,7 +99,7 @@ function Main() {
         }
     }, []);
 
-    const setViewPosRef = useCallback(({ x, y }: Position) => {
+    const setViewPosRef = useCallback(({ x, y }: IPosition) => {
         viewPosRef.current = {
             x,
             y,
@@ -109,6 +139,10 @@ function Main() {
                 setViewPosRef={setViewPosRef}
                 updateCanvasSize={updateCanvasSize}
                 draw={draw}
+                newElementRef={newElementRef}
+                createElement={createElement}
+                imageInfo={imageInfo}
+                setElements={setElements}
             />
         </StyledMain>
     );

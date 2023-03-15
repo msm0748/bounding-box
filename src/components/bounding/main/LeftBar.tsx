@@ -10,9 +10,9 @@ interface Props {
     scaleRef: MutableRefObject<number>;
     handleZoom: (type: Zoom) => void;
     draw: () => void;
-    canvasSize: Size;
-    viewPosRef: MutableRefObject<Position>;
-    setViewPosRef: ({ x, y }: Position) => void;
+    canvasSize: ISize;
+    viewPosRef: MutableRefObject<IPosition>;
+    setViewPosRef: ({ x, y }: IPosition) => void;
 }
 
 const buttonProps = {

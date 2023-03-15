@@ -1,4 +1,4 @@
-import { MutableRefObject, RefObject, useCallback, useEffect, useRef, useState } from "react";
+import { Dispatch, MutableRefObject, RefObject, SetStateAction, useCallback, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { INITIAL_POSITION } from "./defaults";
 import { zoomMouseDown, zoomMouseMove, zoomMouseUp, zoomWheel } from "./utils/imageZoomUtils";
@@ -12,18 +12,40 @@ interface Props {
     ctx: CanvasRenderingContext2D | null;
     scaleRef: MutableRefObject<number>;
     handleZoom: (type: Zoom) => void;
-    viewPosRef: MutableRefObject<Position>;
-    setViewPosRef: ({ x, y }: Position) => void;
-    updateCanvasSize: ({ width, height }: Size) => void;
+    viewPosRef: MutableRefObject<IPosition>;
+    setViewPosRef: ({ x, y }: IPosition) => void;
+    updateCanvasSize: ({ width, height }: ISize) => void;
     draw: () => void;
+    newElementRef: MutableRefObject<IElement | null>;
+    createElement: ({ id, sX, sY, cX, cY }: IElement) => void;
+    imageInfo: IImageInfo | null;
+    setElements: Dispatch<SetStateAction<IElement[]>>;
 }
 
-function Canvas({ canvasRef, imageRef, ctx, reset, setIsReset, tool, scaleRef, handleZoom, viewPosRef, setViewPosRef, updateCanvasSize, draw }: Props) {
+function Canvas({
+    canvasRef,
+    imageRef,
+    ctx,
+    reset,
+    setIsReset,
+    tool,
+    scaleRef,
+    handleZoom,
+    viewPosRef,
+    setViewPosRef,
+    updateCanvasSize,
+    draw,
+    newElementRef,
+    createElement,
+    imageInfo,
+    setElements,
+}: Props) {
     const wrapperRef = useRef<HTMLDivElement>(null);
     const isTouchRef = useRef(false);
     const startPosRef = useRef(INITIAL_POSITION);
     const [isImageMove, setIsImageMove] = useState(false);
     const [isGrabbing, setIsGrabbing] = useState(false);
+    const actionRef = useRef<Action>("none");
 
     // setting canvasSize
     useEffect(() => {
@@ -33,25 +55,33 @@ function Canvas({ canvasRef, imageRef, ctx, reset, setIsReset, tool, scaleRef, h
         updateCanvasSize({ width, height });
     }, [updateCanvasSize]);
 
-    const resetCanvas = useCallback(() => {
+    // reset
+    useEffect(() => {
         handleZoom("reset");
         isTouchRef.current = false;
         setViewPosRef(INITIAL_POSITION);
         startPosRef.current = INITIAL_POSITION;
-        draw();
-    }, [draw, handleZoom, setViewPosRef]);
-
-    // reset
-    useEffect(() => {
-        resetCanvas();
         setIsReset(false);
-    }, [resetCanvas, reset, setIsReset, imageRef]);
+    }, [reset, setIsReset, handleZoom, setViewPosRef]);
+
+    // reset draw
+    useEffect(() => {
+        draw();
+    }, [draw, reset]);
 
     const handleMouseDown = (e: React.MouseEvent) => {
         const { offsetX, offsetY } = e.nativeEvent;
         zoomMouseDown({ offsetX, offsetY, startPosRef, viewPosRef, isTouchRef });
         if (isImageMove === true || tool === "move") {
             setIsGrabbing(true);
+        }
+        if (isImageMove === true) return;
+
+        if (tool === "bounding") {
+            if (actionRef.current !== "none") return;
+            actionRef.current = "drawing";
+            const id = +new Date();
+            createElement({ id, sX: offsetX, sY: offsetY, cX: offsetX, cY: offsetY });
         }
     };
 
@@ -61,12 +91,30 @@ function Canvas({ canvasRef, imageRef, ctx, reset, setIsReset, tool, scaleRef, h
             zoomMouseMove({ offsetX, offsetY, isTouchRef, startPosRef })(setViewPosRef);
         }
 
+        if (tool === "bounding") {
+            if (actionRef.current === "drawing") {
+                if (!newElementRef.current) return;
+                const { id, sX, sY } = newElementRef.current;
+                newElementRef.current = { id, sX, sY, cX: offsetX, cY: offsetY };
+            }
+        }
+
         requestAnimationFrame(draw);
     };
 
     const handleMouseUp = () => {
         zoomMouseUp(isTouchRef);
         setIsGrabbing(false);
+
+        if (isImageMove === true) return;
+
+        if (tool === "bounding") {
+            if (!newElementRef.current) return;
+            const element = newElementRef.current;
+            setElements((prev) => [...prev, element]);
+            actionRef.current = "none";
+            newElementRef.current = null;
+        }
     };
 
     const handleWheel = (e: React.WheelEvent) => {

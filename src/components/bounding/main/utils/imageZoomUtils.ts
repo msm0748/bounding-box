@@ -1,13 +1,8 @@
 import { MutableRefObject } from "react";
 
-interface OffsetPosition {
-    offsetX: number;
-    offsetY: number;
-}
-
-interface ZoomDownParams extends OffsetPosition {
-    startPosRef: MutableRefObject<Position>;
-    viewPosRef: MutableRefObject<Position>;
+interface ZoomDownParams extends IOffset {
+    startPosRef: MutableRefObject<IPosition>;
+    viewPosRef: MutableRefObject<IPosition>;
     isTouchRef: MutableRefObject<boolean>;
 }
 
@@ -20,14 +15,14 @@ export const zoomMouseDown = ({ offsetX, offsetY, startPosRef, viewPosRef, isTou
     isTouchRef.current = true;
 };
 
-interface ZoomMouseMoveParams extends OffsetPosition {
+interface ZoomMouseMoveParams extends IOffset {
     isTouchRef: MutableRefObject<boolean>;
-    startPosRef: MutableRefObject<Position>;
+    startPosRef: MutableRefObject<IPosition>;
 }
 
 export const zoomMouseMove =
     ({ offsetX, offsetY, isTouchRef, startPosRef }: ZoomMouseMoveParams) =>
-    (setViewPosRef: ({ x, y }: Position) => void) => {
+    (setViewPosRef: ({ x, y }: IPosition) => void) => {
         if (isTouchRef.current === false) return;
         const x = offsetX - startPosRef.current.x;
         const y = offsetY - startPosRef.current.y;
@@ -39,16 +34,16 @@ export const zoomMouseUp = (isTouchRef: MutableRefObject<boolean>) => {
     isTouchRef.current = false;
 };
 
-interface ZoomImageByWheelParams extends OffsetPosition {
+interface ZoomImageByWheelParams extends IOffset {
     deltaY: number;
-    viewPosRef: MutableRefObject<Position>;
+    viewPosRef: MutableRefObject<IPosition>;
     scaleRef: MutableRefObject<number>;
 }
 
 const zoomImageByWheel =
     (handleZoom: (type: Zoom) => void) =>
     ({ offsetX, offsetY, deltaY, viewPosRef, scaleRef }: ZoomImageByWheelParams) =>
-    (setViewPosRef: ({ x, y }: Position) => void) => {
+    (setViewPosRef: ({ x, y }: IPosition) => void) => {
         const xs = (offsetX - viewPosRef.current.x) / scaleRef.current;
         const ys = (offsetY - viewPosRef.current.y) / scaleRef.current;
 
@@ -65,12 +60,12 @@ const zoomImageByWheel =
 interface MoveImageByWheelParams {
     deltaY: number;
     deltaX: number;
-    viewPosRef: MutableRefObject<Position>;
+    viewPosRef: MutableRefObject<IPosition>;
 }
 
 const moveImageByWheel =
     ({ deltaX, deltaY, viewPosRef }: MoveImageByWheelParams) =>
-    (setViewPosRef: ({ x, y }: Position) => void) => {
+    (setViewPosRef: ({ x, y }: IPosition) => void) => {
         const x = viewPosRef.current.x + deltaX;
         const y = viewPosRef.current.y + deltaY;
         setViewPosRef({ x, y });
@@ -78,14 +73,14 @@ const moveImageByWheel =
 
 interface ZoomWheelParams {
     e: React.WheelEvent;
-    viewPosRef: MutableRefObject<Position>;
+    viewPosRef: MutableRefObject<IPosition>;
     scaleRef: MutableRefObject<number>;
 }
 
 export const zoomWheel =
     (handleZoom: (type: Zoom) => void) =>
     ({ e, viewPosRef, scaleRef }: ZoomWheelParams) =>
-    (setViewPosRef: ({ x, y }: Position) => void) => {
+    (setViewPosRef: ({ x, y }: IPosition) => void) => {
         const { offsetX, offsetY } = e.nativeEvent;
 
         const deltaY = -e.deltaY;
