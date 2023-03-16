@@ -69,6 +69,21 @@ function Canvas({
         draw();
     }, [draw, reset]);
 
+    const getZoomMousePosition = ({ offsetX, offsetY }: IOffset) => {
+        const viewPos = viewPosRef.current;
+        const scale = scaleRef.current;
+        let zoomPosX = (offsetX - viewPos.x) / scale;
+        let zoomPosY = (offsetY - viewPos.y) / scale;
+
+        //If the mouse goes out of the image area, replace the mouse position with the image position value.
+        if (imageInfo) {
+            zoomPosX = Math.max(0, Math.min(zoomPosX, imageInfo.width));
+            zoomPosY = Math.max(imageInfo.y, Math.min(zoomPosY, imageInfo.height + imageInfo.y));
+        }
+
+        return { zoomPosX, zoomPosY };
+    };
+
     const handleMouseDown = (e: React.MouseEvent) => {
         const { offsetX, offsetY } = e.nativeEvent;
         zoomMouseDown({ offsetX, offsetY, startPosRef, viewPosRef, isTouchRef });
@@ -77,11 +92,13 @@ function Canvas({
         }
         if (isImageMove === true) return;
 
+        const { zoomPosX, zoomPosY } = getZoomMousePosition({ offsetX, offsetY });
+
         if (tool === "bounding") {
             if (actionRef.current !== "none") return;
             actionRef.current = "drawing";
             const id = +new Date();
-            createElement({ id, sX: offsetX, sY: offsetY, cX: offsetX, cY: offsetY });
+            createElement({ id, sX: zoomPosX, sY: zoomPosY, cX: zoomPosX, cY: zoomPosY });
         }
     };
 
@@ -91,11 +108,13 @@ function Canvas({
             zoomMouseMove({ offsetX, offsetY, isTouchRef, startPosRef })(setViewPosRef);
         }
 
+        const { zoomPosX, zoomPosY } = getZoomMousePosition({ offsetX, offsetY });
+
         if (tool === "bounding") {
             if (actionRef.current === "drawing") {
                 if (!newElementRef.current) return;
                 const { id, sX, sY } = newElementRef.current;
-                newElementRef.current = { id, sX, sY, cX: offsetX, cY: offsetY };
+                newElementRef.current = { id, sX, sY, cX: zoomPosX, cY: zoomPosY };
             }
         }
 
