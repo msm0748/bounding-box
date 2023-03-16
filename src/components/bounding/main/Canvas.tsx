@@ -1,51 +1,96 @@
-import { Dispatch, MutableRefObject, RefObject, SetStateAction, useCallback, useEffect, useRef, useState } from "react";
+import { Dispatch, MutableRefObject, SetStateAction, useCallback, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { INITIAL_POSITION } from "./defaults";
 import { zoomMouseDown, zoomMouseMove, zoomMouseUp, zoomWheel } from "./utils/imageZoomUtils";
 
 interface Props {
-    canvasRef: RefObject<HTMLCanvasElement>;
     imageRef: MutableRefObject<HTMLImageElement>;
     reset: boolean;
-    setIsReset: (isReset: boolean) => void;
     tool: Tool;
-    ctx: CanvasRenderingContext2D | null;
     scaleRef: MutableRefObject<number>;
     handleZoom: (type: Zoom) => void;
     viewPosRef: MutableRefObject<IPosition>;
     setViewPosRef: ({ x, y }: IPosition) => void;
+    canvasSize: ISize;
     updateCanvasSize: ({ width, height }: ISize) => void;
-    draw: () => void;
-    newElementRef: MutableRefObject<IElement | null>;
-    createElement: ({ id, sX, sY, cX, cY }: IElement) => void;
     imageInfo: IImageInfo | null;
+    elements: IElement[];
     setElements: Dispatch<SetStateAction<IElement[]>>;
+    getDrawFn: (fn: () => void) => void;
 }
 
 function Canvas({
-    canvasRef,
     imageRef,
-    ctx,
     reset,
-    setIsReset,
     tool,
     scaleRef,
     handleZoom,
     viewPosRef,
     setViewPosRef,
+    canvasSize,
     updateCanvasSize,
-    draw,
-    newElementRef,
-    createElement,
     imageInfo,
+    elements,
     setElements,
+    getDrawFn,
 }: Props) {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const newElementRef = useRef<IElement | null>(null);
     const wrapperRef = useRef<HTMLDivElement>(null);
     const isTouchRef = useRef(false);
     const startPosRef = useRef(INITIAL_POSITION);
     const [isImageMove, setIsImageMove] = useState(false);
     const [isGrabbing, setIsGrabbing] = useState(false);
     const actionRef = useRef<Action>("none");
+
+    // init
+    useEffect(() => {
+        if (!canvasRef.current) return;
+        const canvas = canvasRef.current;
+        canvas.width = canvasSize.width;
+        canvas.height = canvasSize.height;
+    }, [canvasSize]);
+
+    const drawElements = useCallback(
+        (ctx: CanvasRenderingContext2D) => {
+            ctx.lineWidth = 2;
+
+            elements.forEach(({ id, sX, sY, cX, cY }) => {
+                const width = cX - sX;
+                const height = cY - sY;
+                ctx.strokeRect(sX, sY, width, height);
+            });
+
+            if (!newElementRef.current) return;
+            const { sX, sY, cX, cY } = newElementRef.current;
+
+            const width = cX - sX;
+            const height = cY - sY;
+
+            ctx.strokeRect(sX, sY, width, height);
+        },
+        [elements]
+    );
+
+    const draw = useCallback(() => {
+        if (!canvasRef.current) return;
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        ctx.clearRect(0, 0, canvasSize.width, canvasSize.height);
+        ctx.setTransform(scaleRef.current, 0, 0, scaleRef.current, viewPosRef.current.x, viewPosRef.current.y);
+        if (!imageInfo) return;
+        ctx.drawImage(imageRef.current, imageInfo.x, imageInfo.y, imageInfo.width, imageInfo.height);
+        drawElements(ctx);
+    }, [canvasSize, imageInfo, imageRef, scaleRef, viewPosRef, drawElements]);
+
+    useEffect(() => {
+        getDrawFn(draw);
+    }, [draw, getDrawFn]);
+
+    const createElement = ({ id, sX, sY, cX, cY }: IElement) => {
+        newElementRef.current = { id, sX, sY, cX, cY };
+    };
 
     // setting canvasSize
     useEffect(() => {
@@ -54,20 +99,6 @@ function Canvas({
         const height = wrapperRef.current.offsetHeight;
         updateCanvasSize({ width, height });
     }, [updateCanvasSize]);
-
-    // reset
-    useEffect(() => {
-        handleZoom("reset");
-        isTouchRef.current = false;
-        setViewPosRef(INITIAL_POSITION);
-        startPosRef.current = INITIAL_POSITION;
-        setIsReset(false);
-    }, [reset, setIsReset, handleZoom, setViewPosRef]);
-
-    // reset draw
-    useEffect(() => {
-        draw();
-    }, [draw, reset]);
 
     const getZoomMousePosition = ({ offsetX, offsetY }: IOffset) => {
         const viewPos = viewPosRef.current;
@@ -145,6 +176,19 @@ function Canvas({
         if (!wrapperRef.current) return;
         wrapperRef.current.style.cursor = name;
     }, []);
+
+    // reset
+    useEffect(() => {
+        handleZoom("reset");
+        isTouchRef.current = false;
+        setViewPosRef(INITIAL_POSITION);
+        startPosRef.current = INITIAL_POSITION;
+    }, [reset, handleZoom, setViewPosRef]);
+
+    // reset draw
+    useEffect(() => {
+        draw();
+    }, [draw, reset]);
 
     // Setting mouse cursor style
     useEffect(() => {

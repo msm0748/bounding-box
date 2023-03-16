@@ -6,13 +6,13 @@ import Tooltip from "../../common/tooltip";
 interface Props {
     tool: Tool;
     onToolChange: (newTool: Tool) => void;
-    setIsReset: (isReset: boolean) => void;
+    setIsReset: () => void;
     scaleRef: MutableRefObject<number>;
     handleZoom: (type: Zoom) => void;
-    draw: () => void;
     canvasSize: ISize;
     viewPosRef: MutableRefObject<IPosition>;
     setViewPosRef: ({ x, y }: IPosition) => void;
+    drawFnRef: MutableRefObject<undefined | (() => void)>;
 }
 
 const buttonProps = {
@@ -25,7 +25,7 @@ const topButtonProps = {
     hoverBg: "rgb(235, 236, 239)",
 };
 
-function LeftBar({ tool, onToolChange, setIsReset, scaleRef, handleZoom, draw, canvasSize, viewPosRef, setViewPosRef }: Props) {
+function LeftBar({ tool, onToolChange, setIsReset, scaleRef, handleZoom, canvasSize, viewPosRef, setViewPosRef, drawFnRef }: Props) {
     const zoomPoint = useCallback(
         (type: Zoom) => {
             const currentImageMedianX = viewPosRef.current.x + (canvasSize.width * scaleRef.current) / 2;
@@ -39,9 +39,10 @@ function LeftBar({ tool, onToolChange, setIsReset, scaleRef, handleZoom, draw, c
             const y = currentImageMedianY - ys * scaleRef.current;
 
             setViewPosRef({ x, y });
-            requestAnimationFrame(draw);
+            if (!drawFnRef.current) return;
+            requestAnimationFrame(drawFnRef.current);
         },
-        [canvasSize, scaleRef, handleZoom, setViewPosRef, viewPosRef, draw]
+        [canvasSize, scaleRef, handleZoom, setViewPosRef, viewPosRef, drawFnRef]
     );
 
     const handleZoomIn = useCallback(() => {
@@ -64,7 +65,7 @@ function LeftBar({ tool, onToolChange, setIsReset, scaleRef, handleZoom, draw, c
                     break;
                 case "Digit1":
                     if (e.shiftKey) {
-                        setIsReset(true);
+                        setIsReset();
                     }
                     break;
                 case "Equal":
@@ -168,7 +169,7 @@ function LeftBar({ tool, onToolChange, setIsReset, scaleRef, handleZoom, draw, c
                     </Button>
                 </Tooltip>
                 <Tooltip text="화면 기본 크기 Shift + 1">
-                    <Button onClick={() => setIsReset(true)} {...buttonProps}>
+                    <Button onClick={setIsReset} {...buttonProps}>
                         <svg width="24" height="24" fill="rgba(26,26,26,0.8)" fillOpacity="1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
                             <path
                                 fillRule="evenodd"
