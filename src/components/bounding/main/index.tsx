@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, useRef } from "react";
 import styled from "styled-components";
-import Canvas from "./Canvas";
+import Canvas from "./canvas";
 import LeftBar from "./LeftBar";
 import { INITIAL_POSITION, INITIAL_SIZE, MIN_SCALE, MAX_SCALE, ZOOM_SENSITIVITY, INITIAL_SCALE } from "./defaults";
 

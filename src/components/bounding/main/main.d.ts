@@ -30,3 +30,11 @@ interface IElement {
     cX: number;
     cY: number;
 }
+
+interface ImageCanvasdRef {
+    zoomMouseDown: (offsetX: number, offsetY: number) => void;
+    zoomMouseMove: (offsetX: number, offsetY: number) => void;
+    zoomMouseUp: () => void;
+    zoomWheel: (e: React.WheelEvent) => void;
+    draw: () => void;
+}
