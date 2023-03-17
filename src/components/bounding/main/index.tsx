@@ -72,7 +72,7 @@ function Main() {
         setReset((prev) => !prev);
     }, []);
 
-    const updateElements = useCallback((newElements: IElement[]) => {
+    const getElements = useCallback((newElements: IElement[]) => {
         setElements(newElements);
     }, []);
 
@@ -106,7 +106,7 @@ function Main() {
                 imageInfo={imageInfo}
                 elements={elements}
                 getDrawFn={getDrawFn}
-                updateElements={updateElements}
+                getElements={getElements}
                 selectedElement={selectedElement}
                 getSelectedElement={getSelectedElement}
             />

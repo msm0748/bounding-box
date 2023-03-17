@@ -16,7 +16,7 @@ interface Props {
     updateCanvasSize: ({ width, height }: ISize) => void;
     imageInfo: IImageInfo | null;
     elements: IElement[];
-    updateElements: (newElements: IElement[]) => void;
+    getElements: (newElements: IElement[]) => void;
     getDrawFn: (fn: () => void) => void;
     selectedElement: ISelectedElement | null;
     getSelectedElement: (element: ISelectedElement | null) => void;
@@ -35,7 +35,7 @@ function Canvas({
     imageInfo,
     elements,
     getDrawFn,
-    updateElements,
+    getElements,
     selectedElement,
     getSelectedElement,
 }: Props) {
@@ -223,7 +223,7 @@ function Canvas({
                 viewPosRef={viewPosRef}
                 scaleRef={scaleRef}
                 tool={tool}
-                updateElements={updateElements}
+                getElements={getElements}
                 selectedElement={selectedElement}
                 getSelectedElement={getSelectedElement}
                 imageInfo={imageInfo}
