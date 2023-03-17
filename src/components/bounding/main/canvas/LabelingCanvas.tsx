@@ -9,7 +9,7 @@ interface Props {
     tool: Tool;
     updateElements: (newElements: IElement[]) => void;
     selectedElement: ISelectedElement | null;
-    getSelectedElement: (element: ISelectedElement) => void;
+    getSelectedElement: (element: ISelectedElement | null) => void;
     imageInfo: IImageInfo | null;
     mouseCursorStyle: (name: string) => void;
     isImageMove: boolean;
@@ -74,6 +74,7 @@ function LabelingCanvas(
 
     const labelingMouseDown = (zoomPosX: number, zoomPosY: number) => {
         if (isImageMove === true) return;
+
         if (tool === "bounding") {
             if (actionRef.current !== "none") return;
             actionRef.current = "drawing";
@@ -88,6 +89,9 @@ function LabelingCanvas(
                 const offsetY = zoomPosY - element.sY;
                 getSelectedElement({ ...element, offsetX, offsetY });
                 actionRef.current = "moving";
+            } else {
+                getSelectedElement(null);
+                actionRef.current = "none";
             }
         }
     };
@@ -101,7 +105,9 @@ function LabelingCanvas(
             }
         } else if (tool === "select") {
             if (isImageMove === false) {
-                mouseCursorStyle(getElementAtPosition(zoomPosX, zoomPosY, drawingElements.current) ? "move" : "default");
+                if (actionRef.current === "none") {
+                    mouseCursorStyle(getElementAtPosition(zoomPosX, zoomPosY, drawingElements.current) ? "move" : "default");
+                }
             }
             if (actionRef.current === "moving") {
                 if (!selectedElement) return;
@@ -128,7 +134,11 @@ function LabelingCanvas(
         requestAnimationFrame(draw);
     };
 
-    const labelingMouseUp = () => {
+    const labelingMouseUp = (zoomPosX: number, zoomPosY: number) => {
+        const index = drawingElements.current.length - 1;
+        if (index < 0) return;
+        const { sX, sY } = drawingElements.current[index];
+        if (Math.abs(sX - zoomPosX) < 5 || Math.abs(sY - zoomPosY) < 5) return; // Add the box drawing clicking feature
         updateElements(drawingElements.current);
         actionRef.current = "none";
     };

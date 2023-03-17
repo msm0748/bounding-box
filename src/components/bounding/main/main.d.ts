@@ -46,9 +46,9 @@ interface ImageCanvasdRef {
 }
 
 interface LabelingCanvasdRef {
-    labelingMouseDown: (offsetX: number, offsetY: number) => void;
-    labelingMouseMove: (offsetX: number, offsetY: number) => void;
-    labelingMouseUp: () => void;
+    labelingMouseDown: (zoomPosX: number, zoomPosY: number) => void;
+    labelingMouseMove: (zoomPosX: number, zoomPosY: number) => void;
+    labelingMouseUp: (zoomPosX: number, zoomPosY: number) => void;
     labelingWheel: (e: React.WheelEvent) => void;
     draw: () => void;
 }

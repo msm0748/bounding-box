@@ -76,7 +76,7 @@ function Main() {
         setElements(newElements);
     }, []);
 
-    const getSelectedElement = useCallback((element: IElement) => {
+    const getSelectedElement = useCallback((element: ISelectedElement | null) => {
         setSelectedElement(element);
     }, []);
 

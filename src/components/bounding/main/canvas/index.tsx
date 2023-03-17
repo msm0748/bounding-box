@@ -19,7 +19,7 @@ interface Props {
     updateElements: (newElements: IElement[]) => void;
     getDrawFn: (fn: () => void) => void;
     selectedElement: ISelectedElement | null;
-    getSelectedElement: (element: ISelectedElement) => void;
+    getSelectedElement: (element: ISelectedElement | null) => void;
 }
 
 function Canvas({
@@ -74,7 +74,6 @@ function Canvas({
         let zoomPosX = (offsetX - viewPos.x) / scale;
         let zoomPosY = (offsetY - viewPos.y) / scale;
 
-        //If the mouse goes out of the image area, replace the mouse position with the image position value.
         if (imageInfo) {
             zoomPosX = Math.max(0, Math.min(zoomPosX, imageInfo.width));
             zoomPosY = Math.max(imageInfo.y, Math.min(zoomPosY, imageInfo.height + imageInfo.y));
@@ -113,7 +112,8 @@ function Canvas({
         }
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (e: React.MouseEvent) => {
+        const { offsetX, offsetY } = e.nativeEvent;
         if (handleImageCanvasRef.current) {
             handleImageCanvasRef.current.zoomMouseUp();
         }
@@ -121,8 +121,10 @@ function Canvas({
 
         if (isImageMove === true) return;
 
+        const { zoomPosX, zoomPosY } = getZoomMousePosition(offsetX, offsetY);
+
         if (handleLabelingCanvasRef.current) {
-            handleLabelingCanvasRef.current.labelingMouseUp();
+            handleLabelingCanvasRef.current.labelingMouseUp(zoomPosX, zoomPosY);
         }
     };
 
