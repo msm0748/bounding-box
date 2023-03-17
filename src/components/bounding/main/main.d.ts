@@ -31,6 +31,12 @@ interface IElement {
     cY: number;
 }
 
+interface ISelectedElement extends IElement {
+    position?: string | null;
+    offsetX?: number;
+    offsetY?: number;
+}
+
 interface ImageCanvasdRef {
     zoomMouseDown: (offsetX: number, offsetY: number) => void;
     zoomMouseMove: (offsetX: number, offsetY: number) => void;
@@ -38,8 +44,6 @@ interface ImageCanvasdRef {
     zoomWheel: (e: React.WheelEvent) => void;
     draw: () => void;
 }
-
-type UpdateElementsFn = (elements: IElement[] | ((prev: IElement[]) => IElement[])) => void;
 
 interface LabelingCanvasdRef {
     labelingMouseDown: (offsetX: number, offsetY: number) => void;

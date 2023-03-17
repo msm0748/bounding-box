@@ -1,4 +1,4 @@
-import { useRef, useCallback, forwardRef, useImperativeHandle, MutableRefObject, useEffect } from "react";
+import { useRef, forwardRef, useImperativeHandle, MutableRefObject, useEffect } from "react";
 import styled from "styled-components";
 
 interface Props {
@@ -7,13 +7,21 @@ interface Props {
     viewPosRef: MutableRefObject<IPosition>;
     scaleRef: MutableRefObject<number>;
     tool: Tool;
-    updateElements: UpdateElementsFn;
+    updateElements: (newElements: IElement[]) => void;
+    selectedElement: ISelectedElement | null;
+    getSelectedElement: (element: ISelectedElement) => void;
+    imageInfo: IImageInfo | null;
+    mouseCursorStyle: (name: string) => void;
+    isImageMove: boolean;
 }
 
-function LabelingCanvas({ elements, canvasSize, updateElements, viewPosRef, scaleRef, tool }: Props, ref: React.Ref<LabelingCanvasdRef>) {
+function LabelingCanvas(
+    { elements, canvasSize, updateElements, viewPosRef, scaleRef, tool, selectedElement, getSelectedElement, imageInfo, mouseCursorStyle, isImageMove }: Props,
+    ref: React.Ref<LabelingCanvasdRef>
+) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const newElementRef = useRef<IElement | null>(null);
     const actionRef = useRef<Action>("none");
+    const drawingElements = useRef<IElement[]>([]);
 
     // init
     useEffect(() => {
@@ -30,62 +38,101 @@ function LabelingCanvas({ elements, canvasSize, updateElements, viewPosRef, scal
         if (!ctx) return;
         canvas.width = canvasSize.width;
         ctx.setTransform(scaleRef.current, 0, 0, scaleRef.current, viewPosRef.current.x, viewPosRef.current.y);
-        drawElements(ctx);
+
+        ctx.lineWidth = 2;
+
+        drawingElements.current.forEach(({ id, sX, sY, cX, cY }) => {
+            const width = cX - sX;
+            const height = cY - sY;
+            ctx.strokeRect(sX, sY, width, height);
+        });
     };
 
     const createElement = ({ id, sX, sY, cX, cY }: IElement) => {
-        newElementRef.current = { id, sX, sY, cX, cY };
+        return { id, sX, sY, cX, cY };
     };
 
-    const drawElements = useCallback(
-        (ctx: CanvasRenderingContext2D) => {
-            ctx.lineWidth = 2;
+    const isWithinElement = (x: number, y: number, element: IElement) => {
+        const { sX, sY, cX, cY } = element;
+        const minX = Math.min(sX, cX);
+        const maxX = Math.max(sX, cX);
+        const minY = Math.min(sY, cY);
+        const maxY = Math.max(sY, cY);
+        return x >= minX && x <= maxX && y >= minY && y <= maxY;
+    };
 
-            elements.forEach(({ id, sX, sY, cX, cY }) => {
-                const width = cX - sX;
-                const height = cY - sY;
-                ctx.strokeRect(sX, sY, width, height);
-            });
+    const getElementAtPosition = (x: number, y: number, elements: IElement[]) => {
+        return elements.find((element) => isWithinElement(x, y, element));
+    };
 
-            if (!newElementRef.current) return;
+    const updateElement = ({ id, sX, sY, cX, cY }: IElement) => {
+        const updateElement = createElement({ id, sX, sY, cX, cY });
 
-            const { sX, sY, cX, cY } = newElementRef.current;
-
-            const width = cX - sX;
-            const height = cY - sY;
-
-            ctx.strokeRect(sX, sY, width, height);
-        },
-        [elements]
-    );
+        const elementsCopy = [...drawingElements.current].map((element) => (element.id === id ? updateElement : element));
+        drawingElements.current = elementsCopy;
+    };
 
     const labelingMouseDown = (zoomPosX: number, zoomPosY: number) => {
+        if (isImageMove === true) return;
         if (tool === "bounding") {
             if (actionRef.current !== "none") return;
             actionRef.current = "drawing";
             const id = +new Date();
-            createElement({ id, sX: zoomPosX, sY: zoomPosY, cX: zoomPosX, cY: zoomPosY });
+            const element = createElement({ id, sX: zoomPosX, sY: zoomPosY, cX: zoomPosX, cY: zoomPosY });
+            drawingElements.current = [...drawingElements.current, element];
+        } else if (tool === "select") {
+            const element = getElementAtPosition(zoomPosX, zoomPosY, elements);
+
+            if (element) {
+                const offsetX = zoomPosX - element.sX;
+                const offsetY = zoomPosY - element.sY;
+                getSelectedElement({ ...element, offsetX, offsetY });
+                actionRef.current = "moving";
+            }
         }
     };
     const labelingMouseMove = (zoomPosX: number, zoomPosY: number) => {
         if (tool === "bounding") {
             if (actionRef.current === "drawing") {
-                if (!newElementRef.current) return;
-                const { id, sX, sY } = newElementRef.current;
-                newElementRef.current = { id, sX, sY, cX: zoomPosX, cY: zoomPosY };
+                if (!drawingElements.current) return;
+                const index = drawingElements.current.length - 1;
+                const { id, sX, sY } = drawingElements.current[index];
+                updateElement({ id, sX, sY, cX: zoomPosX, cY: zoomPosY });
+            }
+        } else if (tool === "select") {
+            if (isImageMove === false) {
+                mouseCursorStyle(getElementAtPosition(zoomPosX, zoomPosY, drawingElements.current) ? "move" : "default");
+            }
+            if (actionRef.current === "moving") {
+                if (!selectedElement) return;
+                const { id, sX, sY, cX, cY, offsetX, offsetY } = selectedElement;
+
+                if (!(offsetX && offsetY)) return;
+
+                const width = cX - sX;
+                const height = cY - sY;
+
+                let newX = zoomPosX - offsetX;
+                let newY = zoomPosY - offsetY;
+
+                if (imageInfo) {
+                    if (newX < 0) newX = 0;
+                    if (newY < imageInfo.y) newY = imageInfo.y;
+                    if (newX + width > imageInfo.width) newX = imageInfo.width - width;
+                    if (newY + height > imageInfo.height + imageInfo.y) newY = imageInfo.height + imageInfo.y - height;
+                }
+
+                updateElement({ id, sX: newX, sY: newY, cX: newX + width, cY: newY + height });
             }
         }
         requestAnimationFrame(draw);
     };
+
     const labelingMouseUp = () => {
-        if (tool === "bounding") {
-            if (!newElementRef.current) return;
-            const element = newElementRef.current;
-            updateElements((prev) => [...prev, element]);
-            actionRef.current = "none";
-            newElementRef.current = null;
-        }
+        updateElements(drawingElements.current);
+        actionRef.current = "none";
     };
+
     const labelingWheel = () => {
         requestAnimationFrame(draw);
     };

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useRef, Dispatch, SetStateAction } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import styled from "styled-components";
 import Canvas from "./canvas";
 import LeftBar from "./LeftBar";
@@ -13,6 +13,7 @@ function Main() {
     const scaleRef = useRef(INITIAL_SCALE);
     const viewPosRef = useRef(INITIAL_POSITION);
     const [elements, setElements] = useState<IElement[]>([]);
+    const [selectedElement, setSelectedElement] = useState<ISelectedElement | null>(null);
     const [imageInfo, setImageInfo] = useState<IImageInfo | null>(null);
 
     // setting image
@@ -71,10 +72,12 @@ function Main() {
         setReset((prev) => !prev);
     }, []);
 
-    type UpdateElementsFn = (elements: IElement[] | ((prevElements: IElement[]) => IElement[])) => void;
-
-    const updateElements: UpdateElementsFn = useCallback((newElements) => {
+    const updateElements = useCallback((newElements: IElement[]) => {
         setElements(newElements);
+    }, []);
+
+    const getSelectedElement = useCallback((element: IElement) => {
+        setSelectedElement(element);
     }, []);
 
     return (
@@ -104,6 +107,8 @@ function Main() {
                 elements={elements}
                 getDrawFn={getDrawFn}
                 updateElements={updateElements}
+                selectedElement={selectedElement}
+                getSelectedElement={getSelectedElement}
             />
         </StyledMain>
     );

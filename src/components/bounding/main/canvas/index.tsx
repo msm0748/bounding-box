@@ -16,8 +16,10 @@ interface Props {
     updateCanvasSize: ({ width, height }: ISize) => void;
     imageInfo: IImageInfo | null;
     elements: IElement[];
-    updateElements: UpdateElementsFn;
+    updateElements: (newElements: IElement[]) => void;
     getDrawFn: (fn: () => void) => void;
+    selectedElement: ISelectedElement | null;
+    getSelectedElement: (element: ISelectedElement) => void;
 }
 
 function Canvas({
@@ -34,6 +36,8 @@ function Canvas({
     elements,
     getDrawFn,
     updateElements,
+    selectedElement,
+    getSelectedElement,
 }: Props) {
     const handleImageCanvasRef = useRef<ImageCanvasdRef>(null);
     const handleLabelingCanvasRef = useRef<LabelingCanvasdRef>(null);
@@ -87,8 +91,6 @@ function Canvas({
         if (isImageMove === true || tool === "move") {
             setIsGrabbing(true);
         }
-
-        if (isImageMove === true) return;
 
         const { zoomPosX, zoomPosY } = getZoomMousePosition(offsetX, offsetY);
 
@@ -220,6 +222,11 @@ function Canvas({
                 scaleRef={scaleRef}
                 tool={tool}
                 updateElements={updateElements}
+                selectedElement={selectedElement}
+                getSelectedElement={getSelectedElement}
+                imageInfo={imageInfo}
+                mouseCursorStyle={mouseCursorStyle}
+                isImageMove={isImageMove}
             ></LabelingCanvas>
         </StyledWrapper>
     );
