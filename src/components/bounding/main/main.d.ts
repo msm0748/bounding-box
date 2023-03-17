@@ -38,3 +38,13 @@ interface ImageCanvasdRef {
     zoomWheel: (e: React.WheelEvent) => void;
     draw: () => void;
 }
+
+type UpdateElementsFn = (elements: IElement[] | ((prev: IElement[]) => IElement[])) => void;
+
+interface LabelingCanvasdRef {
+    labelingMouseDown: (offsetX: number, offsetY: number) => void;
+    labelingMouseMove: (offsetX: number, offsetY: number) => void;
+    labelingMouseUp: () => void;
+    labelingWheel: (e: React.WheelEvent) => void;
+    draw: () => void;
+}

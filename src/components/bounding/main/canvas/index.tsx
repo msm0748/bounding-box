@@ -1,4 +1,4 @@
-import { Dispatch, MutableRefObject, SetStateAction, useCallback, useEffect, useRef, useState } from "react";
+import { MutableRefObject, useCallback, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { INITIAL_POSITION } from "../defaults";
 import ImageCanvas from "./ImageCanvas";
@@ -16,7 +16,7 @@ interface Props {
     updateCanvasSize: ({ width, height }: ISize) => void;
     imageInfo: IImageInfo | null;
     elements: IElement[];
-    setElements: Dispatch<SetStateAction<IElement[]>>;
+    updateElements: UpdateElementsFn;
     getDrawFn: (fn: () => void) => void;
 }
 
@@ -32,10 +32,11 @@ function Canvas({
     updateCanvasSize,
     imageInfo,
     elements,
-    setElements,
     getDrawFn,
+    updateElements,
 }: Props) {
     const handleImageCanvasRef = useRef<ImageCanvasdRef>(null);
+    const handleLabelingCanvasRef = useRef<LabelingCanvasdRef>(null);
     const wrapperRef = useRef<HTMLDivElement>(null);
     const isTouchRef = useRef(false);
     const startPosRef = useRef(INITIAL_POSITION);
@@ -45,6 +46,9 @@ function Canvas({
     const draw = useCallback(() => {
         if (handleImageCanvasRef.current) {
             handleImageCanvasRef.current.draw();
+        }
+        if (handleLabelingCanvasRef.current) {
+            handleLabelingCanvasRef.current.draw();
         }
     }, []);
 
@@ -60,7 +64,7 @@ function Canvas({
         updateCanvasSize({ width, height });
     }, [updateCanvasSize]);
 
-    const getZoomMousePosition = ({ offsetX, offsetY }: IOffset) => {
+    const getZoomMousePosition = (offsetX: number, offsetY: number) => {
         const viewPos = viewPosRef.current;
         const scale = scaleRef.current;
         let zoomPosX = (offsetX - viewPos.x) / scale;
@@ -83,7 +87,14 @@ function Canvas({
         if (isImageMove === true || tool === "move") {
             setIsGrabbing(true);
         }
+
         if (isImageMove === true) return;
+
+        const { zoomPosX, zoomPosY } = getZoomMousePosition(offsetX, offsetY);
+
+        if (handleLabelingCanvasRef.current) {
+            handleLabelingCanvasRef.current.labelingMouseDown(zoomPosX, zoomPosY);
+        }
     };
 
     const handleMouseMove = (e: React.MouseEvent) => {
@@ -92,6 +103,11 @@ function Canvas({
             if (handleImageCanvasRef.current) {
                 handleImageCanvasRef.current.zoomMouseMove(offsetX, offsetY);
             }
+        }
+        const { zoomPosX, zoomPosY } = getZoomMousePosition(offsetX, offsetY);
+
+        if (handleLabelingCanvasRef.current) {
+            handleLabelingCanvasRef.current.labelingMouseMove(zoomPosX, zoomPosY);
         }
     };
 
@@ -102,11 +118,18 @@ function Canvas({
         setIsGrabbing(false);
 
         if (isImageMove === true) return;
+
+        if (handleLabelingCanvasRef.current) {
+            handleLabelingCanvasRef.current.labelingMouseUp();
+        }
     };
 
     const handleWheel = (e: React.WheelEvent) => {
         if (handleImageCanvasRef.current) {
             handleImageCanvasRef.current.zoomWheel(e);
+        }
+        if (handleLabelingCanvasRef.current) {
+            handleLabelingCanvasRef.current.labelingWheel(e);
         }
     };
 
@@ -189,7 +212,15 @@ function Canvas({
                 handleZoom={handleZoom}
                 imageInfo={imageInfo}
             ></ImageCanvas>
-            <LabelingCanvas elements={elements}></LabelingCanvas>
+            <LabelingCanvas
+                ref={handleLabelingCanvasRef}
+                canvasSize={canvasSize}
+                elements={elements}
+                viewPosRef={viewPosRef}
+                scaleRef={scaleRef}
+                tool={tool}
+                updateElements={updateElements}
+            ></LabelingCanvas>
         </StyledWrapper>
     );
 }
@@ -197,5 +228,6 @@ function Canvas({
 export default Canvas;
 
 const StyledWrapper = styled.div`
+    position: relative;
     flex: 1;
 `;

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef, Dispatch, SetStateAction } from "react";
 import styled from "styled-components";
 import Canvas from "./canvas";
 import LeftBar from "./LeftBar";
@@ -71,6 +71,12 @@ function Main() {
         setReset((prev) => !prev);
     }, []);
 
+    type UpdateElementsFn = (elements: IElement[] | ((prevElements: IElement[]) => IElement[])) => void;
+
+    const updateElements: UpdateElementsFn = useCallback((newElements) => {
+        setElements(newElements);
+    }, []);
+
     return (
         <StyledMain>
             <LeftBar
@@ -96,8 +102,8 @@ function Main() {
                 updateCanvasSize={updateCanvasSize}
                 imageInfo={imageInfo}
                 elements={elements}
-                setElements={setElements}
                 getDrawFn={getDrawFn}
+                updateElements={updateElements}
             />
         </StyledMain>
     );
