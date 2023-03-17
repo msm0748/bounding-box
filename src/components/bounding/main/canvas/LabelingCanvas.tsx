@@ -32,6 +32,19 @@ function LabelingCanvas(
         canvas.height = canvasSize.height;
     }, [canvasSize]);
 
+    const measurePaddingBoxSize = (ctx: CanvasRenderingContext2D, sX: number, sY: number, cX: number, cY: number) => {
+        ctx.setLineDash([5, 5]);
+        const width = Math.abs(cX - sX);
+        const height = Math.abs(cY - sY);
+        const cutLineX = width - width * 0.95;
+        const cutLineY = height - height * 0.95;
+
+        const paadingBox = Math.min(cutLineX, cutLineY);
+
+        ctx.strokeRect(Math.min(sX, cX) + paadingBox / 2, Math.min(sY, cY) + paadingBox / 2, width - paadingBox, height - paadingBox);
+        ctx.setLineDash([0]);
+    };
+
     const draw = () => {
         if (!canvasRef.current) return;
         const canvas = canvasRef.current;
@@ -50,9 +63,10 @@ function LabelingCanvas(
             if (selectedElement) {
                 // 현재 선택중인 rect 색상 변경
                 if (id === selectedElement.id) {
-                    const resizePoint = resizePointRef.current + 3 / scaleRef.current;
+                    const resizePoint = resizePointRef.current + 2 / scaleRef.current;
 
                     ctx.fillStyle = "white";
+                    measurePaddingBoxSize(ctx, sX, sY, cX, cY);
 
                     if (tool === "select") {
                         ctx.strokeRect(cX - resizePoint / 2, sY - resizePoint / 2, resizePoint, resizePoint);
@@ -208,21 +222,23 @@ function LabelingCanvas(
     };
 
     const labelingMouseMove = (zoomPosX: number, zoomPosY: number) => {
-        if (tool === "bounding") {
-            if (actionRef.current === "drawing") {
-                if (!drawingElements.current) return;
-                const index = drawingElements.current.length - 1;
-                const { id, sX, sY } = drawingElements.current[index];
-                updateElement({ id, sX, sY, cX: zoomPosX, cY: zoomPosY });
-            }
-        } else if (tool === "select") {
-            const element = getElementAtPosition(zoomPosX, zoomPosY, drawingElements.current);
-            if (actionRef.current === "none") {
-                if (element) {
-                    if (!element.position) return;
-                    mouseCursorStyle(element ? cursorForPosition(element.position) : "default");
-                } else {
-                    mouseCursorStyle("default");
+        if (isImageMove === false) {
+            if (tool === "bounding") {
+                if (actionRef.current === "drawing") {
+                    if (!drawingElements.current) return;
+                    const index = drawingElements.current.length - 1;
+                    const { id, sX, sY } = drawingElements.current[index];
+                    updateElement({ id, sX, sY, cX: zoomPosX, cY: zoomPosY });
+                }
+            } else if (tool === "select") {
+                const element = getElementAtPosition(zoomPosX, zoomPosY, drawingElements.current);
+                if (actionRef.current === "none") {
+                    if (element) {
+                        if (!element.position) return;
+                        mouseCursorStyle(element ? cursorForPosition(element.position) : "default");
+                    } else {
+                        mouseCursorStyle("default");
+                    }
                 }
             }
             if (actionRef.current === "moving") {
@@ -260,15 +276,18 @@ function LabelingCanvas(
     const labelingMouseUp = (zoomPosX: number, zoomPosY: number) => {
         const index = drawingElements.current.length - 1;
         if (index < 0) return;
-        if (tool === "bounding") {
-            const { id, sX, sY, cX, cY } = adjustElementCoordinates(drawingElements.current[index]);
-            if (Math.abs(sX - cX) < 5 || Math.abs(sY - cY) < 5) return; // Add the box drawing clicking feature
+        const { id, sX, sY, cX, cY } = adjustElementCoordinates(drawingElements.current[index]);
+        if (actionRef.current === "resizing" || actionRef.current === "drawing") {
             updateElement({ id, sX, sY, cX, cY });
+        }
+        if (tool === "bounding") {
+            if (Math.abs(sX - cX) < 5 || Math.abs(sY - cY) < 5) return; // Add the box drawing clicking feature
         } else if (tool === "select") {
-            if (!selectedElement) return;
-            const updateSelectedElement = [...drawingElements.current].find((element) => element.id === selectedElement.id);
-            if (updateSelectedElement) {
-                getSelectedElement(updateSelectedElement);
+            if (selectedElement) {
+                const updateSelectedElement = [...drawingElements.current].find((element) => element.id === selectedElement.id);
+                if (updateSelectedElement) {
+                    getSelectedElement(updateSelectedElement);
+                }
             }
         }
         getElements(drawingElements.current);
@@ -279,6 +298,12 @@ function LabelingCanvas(
     const labelingWheel = () => {
         requestAnimationFrame(draw);
     };
+
+    useEffect(() => {
+        if (tool === "bounding") {
+            getSelectedElement(null);
+        }
+    }, [tool, getSelectedElement]);
 
     useImperativeHandle(ref, () => ({
         labelingMouseDown,
