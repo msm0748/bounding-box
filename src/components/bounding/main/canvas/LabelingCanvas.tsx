@@ -22,6 +22,7 @@ function LabelingCanvas(
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const actionRef = useRef<Action>("none");
     const drawingElements = useRef<IElement[]>([]);
+    const resizePointRef = useRef(9);
 
     // init
     useEffect(() => {
@@ -39,12 +40,35 @@ function LabelingCanvas(
         canvas.width = canvasSize.width;
         ctx.setTransform(scaleRef.current, 0, 0, scaleRef.current, viewPosRef.current.x, viewPosRef.current.y);
 
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2 / scaleRef.current;
 
         drawingElements.current.forEach(({ id, sX, sY, cX, cY }) => {
             const width = cX - sX;
             const height = cY - sY;
             ctx.strokeRect(sX, sY, width, height);
+
+            if (selectedElement) {
+                // 현재 선택중인 rect 색상 변경
+                if (id === selectedElement.id) {
+                    const resizePoint = resizePointRef.current + 3 / scaleRef.current;
+
+                    ctx.fillStyle = "white";
+
+                    if (tool === "select") {
+                        ctx.strokeRect(cX - resizePoint / 2, sY - resizePoint / 2, resizePoint, resizePoint);
+                        ctx.fillRect(cX - resizePoint / 2, sY - resizePoint / 2, resizePoint, resizePoint);
+
+                        ctx.strokeRect(sX - resizePoint / 2, sY - resizePoint / 2, resizePoint, resizePoint);
+                        ctx.fillRect(sX - resizePoint / 2, sY - resizePoint / 2, resizePoint, resizePoint);
+
+                        ctx.strokeRect(sX - resizePoint / 2, cY - resizePoint / 2, resizePoint, resizePoint);
+                        ctx.fillRect(sX - resizePoint / 2, cY - resizePoint / 2, resizePoint, resizePoint);
+
+                        ctx.strokeRect(cX - resizePoint / 2, cY - resizePoint / 2, resizePoint, resizePoint);
+                        ctx.fillRect(cX - resizePoint / 2, cY - resizePoint / 2, resizePoint, resizePoint);
+                    }
+                }
+            }
         });
     };
 
@@ -53,13 +77,14 @@ function LabelingCanvas(
     };
     const nearPoint = (offsetX: number, offsetY: number, x: number, y: number, name: string, cX?: number, cY?: number) => {
         if (cX && cY) {
+            const resizePoint = resizePointRef.current / scaleRef.current;
             switch (name) {
                 case "t":
                 case "b":
-                    return x < offsetX && cX > offsetX && Math.abs(offsetY - y) < 5 ? name : null;
+                    return x < offsetX && cX > offsetX && Math.abs(offsetY - y) < resizePoint ? name : null;
                 case "l":
                 case "r":
-                    return y < offsetY && cY > offsetY && Math.abs(offsetX - x) < 5 ? name : null;
+                    return y < offsetY && cY > offsetY && Math.abs(offsetX - x) < resizePoint ? name : null;
             }
         } else {
             return Math.abs(offsetX - x) < 5 && Math.abs(offsetY - y) < 5 ? name : null;
@@ -241,7 +266,7 @@ function LabelingCanvas(
             updateElement({ id, sX, sY, cX, cY });
         } else if (tool === "select") {
             if (!selectedElement) return;
-            const updateSelectedElement = [...elements].find((element) => element.id === selectedElement.id);
+            const updateSelectedElement = [...drawingElements.current].find((element) => element.id === selectedElement.id);
             if (updateSelectedElement) {
                 getSelectedElement(updateSelectedElement);
             }
