@@ -1,4 +1,4 @@
-import { useRef, forwardRef, useImperativeHandle, MutableRefObject, useEffect } from "react";
+import { useRef, forwardRef, useImperativeHandle, MutableRefObject, useEffect, useCallback } from "react";
 import styled from "styled-components";
 
 interface Props {
@@ -45,7 +45,7 @@ function LabelingCanvas(
         ctx.setLineDash([0]);
     };
 
-    const draw = () => {
+    const draw = useCallback(() => {
         if (!canvasRef.current) return;
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d");
@@ -61,7 +61,6 @@ function LabelingCanvas(
             ctx.strokeRect(sX, sY, width, height);
 
             if (selectedElement) {
-                // 현재 선택중인 rect 색상 변경
                 if (id === selectedElement.id) {
                     const resizePoint = resizePointRef.current + 2 / scaleRef.current;
 
@@ -84,7 +83,7 @@ function LabelingCanvas(
                 }
             }
         });
-    };
+    }, [canvasSize, scaleRef, selectedElement, tool, viewPosRef]);
 
     const createElement = ({ id, sX, sY, cX, cY }: IElement) => {
         return { id, sX, sY, cX, cY };
@@ -156,8 +155,24 @@ function LabelingCanvas(
         return { id, sX: minX, sY: minY, cX: maxX, cY: maxY };
     };
 
-    const getElementAtPosition = (x: number, y: number, elements: IElement[]) => {
-        return elements.map((element) => ({ ...element, position: positionWithinElement(x, y, element) })).find((element) => element.position !== null);
+    const getElementAtPosition = (zoomPosX: number, zoomPosY: number, elements: IElement[]) => {
+        let elementsCopy = [...elements];
+        // Within the function, if the variable "selectedElement" exists, it is moved to the front of the array as the first element
+        if (selectedElement) {
+            const selectedElementCopy = elementsCopy.find((element) => element.id === selectedElement.id);
+            elementsCopy = elementsCopy.filter((element) => element.id !== selectedElement.id);
+            if (selectedElementCopy) {
+                elementsCopy = [selectedElementCopy, ...elementsCopy];
+                return elementsCopy
+                    .map((element) => ({ ...element, position: positionWithinElement(zoomPosX, zoomPosY, element) }))
+                    .find((element) => element.position !== null);
+            }
+        }
+
+        return elementsCopy
+            .reverse()
+            .map((element) => ({ ...element, position: positionWithinElement(zoomPosX, zoomPosY, element) }))
+            .find((element) => element.position !== null);
     };
 
     const resizedCoordinates = (zoomPosX: number, zoomPosY: number, position: string, coordinates: IElement) => {
@@ -307,7 +322,8 @@ function LabelingCanvas(
         if (tool === "bounding") {
             getSelectedElement(null);
         }
-    }, [tool, getSelectedElement]);
+        draw();
+    }, [tool, getSelectedElement, draw]);
 
     useImperativeHandle(ref, () => ({
         labelingMouseDown,
