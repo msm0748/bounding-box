@@ -85,9 +85,22 @@ function LabelingCanvas(
         });
     }, [canvasSize, scaleRef, selectedElement, tool, viewPosRef]);
 
-    const createElement = ({ id, sX, sY, cX, cY }: IElement) => {
-        return { id, sX, sY, cX, cY };
+    const clamp = (value: number, min: number, max: number) => {
+        return Math.min(Math.max(value, min), max);
     };
+
+    const createElement = ({ id, sX, sY, cX, cY }: IElement) => {
+        if (imageInfo) {
+            const clampedSX = clamp(sX, 0, imageInfo.width);
+            const clampedSY = clamp(sY, imageInfo.y, imageInfo.height + imageInfo.y);
+            const clampedCX = clamp(cX, 0, imageInfo.width);
+            const clampedCY = clamp(cY, imageInfo.y, imageInfo.height + imageInfo.y);
+            return { id, sX: clampedSX, sY: clampedSY, cX: clampedCX, cY: clampedCY };
+        } else {
+            return { id, sX, sY, cX, cY };
+        }
+    };
+
     const nearPoint = (offsetX: number, offsetY: number, x: number, y: number, name: string, cX?: number, cY?: number) => {
         const resizePoint = resizePointRef.current / scaleRef.current;
         if (cX && cY) {

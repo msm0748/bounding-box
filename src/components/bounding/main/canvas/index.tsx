@@ -71,13 +71,8 @@ function Canvas({
     const getZoomMousePosition = (offsetX: number, offsetY: number) => {
         const viewPos = viewPosRef.current;
         const scale = scaleRef.current;
-        let zoomPosX = (offsetX - viewPos.x) / scale;
-        let zoomPosY = (offsetY - viewPos.y) / scale;
-
-        if (imageInfo) {
-            zoomPosX = Math.max(0, Math.min(zoomPosX, imageInfo.width));
-            zoomPosY = Math.max(imageInfo.y, Math.min(zoomPosY, imageInfo.height + imageInfo.y));
-        }
+        const zoomPosX = (offsetX - viewPos.x) / scale;
+        const zoomPosY = (offsetY - viewPos.y) / scale;
 
         return { zoomPosX, zoomPosY };
     };
