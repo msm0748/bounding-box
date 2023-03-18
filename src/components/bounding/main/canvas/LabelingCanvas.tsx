@@ -175,28 +175,30 @@ function LabelingCanvas(
             .find((element) => element.position !== null);
     };
 
-    const resizedCoordinates = (zoomPosX: number, zoomPosY: number, position: string, coordinates: IElement) => {
+    const resizedCoordinates = (zoomPosX: number, zoomPosY: number, position: string, coordinates: IElement, offsetX: number, offsetY: number) => {
         const { id, sX, sY, cX, cY } = coordinates;
+        const dx = zoomPosX - offsetX;
+        const dy = zoomPosY - offsetY;
 
         switch (position) {
             case "tl":
-                return { id, sX: zoomPosX, sY: zoomPosY, cX, cY };
+                return { id, sX: sX + dx, sY: sY + dy, cX, cY };
             case "tr":
-                return { id, sX, sY: zoomPosY, cX: zoomPosX, cY };
+                return { id, sX, sY: sY + dy, cX: cX + dx, cY };
             case "br":
-                return { id, sX, sY, cX: zoomPosX, cY: zoomPosY };
+                return { id, sX, sY, cX: cX + dx, cY: cY + dy };
             case "bl":
-                return { id, sX: zoomPosX, sY, cX, cY: zoomPosY };
+                return { id, sX: sX + dx, sY, cX, cY: cY + dy };
             case "b":
-                return { id, sX, sY, cX, cY: zoomPosY };
+                return { id, sX, sY, cX, cY: cY + dy };
             case "t":
-                return { id, sX, sY: zoomPosY, cX, cY };
+                return { id, sX, sY: sY + dy, cX, cY };
             case "r":
-                return { id, sX, sY, cX: zoomPosX, cY };
+                return { id, sX, sY, cX: cX + dx, cY };
             case "l":
-                return { id, sX: zoomPosX, sY, cX, cY };
+                return { id, sX: sX + dx, sY, cX, cY };
             default:
-                return { id, sX, sY, cX, cY };
+                return coordinates;
         }
     };
 
@@ -280,7 +282,7 @@ function LabelingCanvas(
                     const { position, offsetX, offsetY, ...coordinates } = selectedElement;
                     if (!position) return;
                     if (!(offsetX && offsetY)) return;
-                    const { id, sX, sY, cX, cY } = resizedCoordinates(zoomPosX, zoomPosY, position, coordinates);
+                    const { id, sX, sY, cX, cY } = resizedCoordinates(zoomPosX, zoomPosY, position, coordinates, offsetX, offsetY);
                     updateElement({ id, sX, sY, cX, cY });
                 }
             }
