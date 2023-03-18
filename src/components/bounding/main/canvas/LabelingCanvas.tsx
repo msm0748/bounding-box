@@ -90,8 +90,8 @@ function LabelingCanvas(
         return { id, sX, sY, cX, cY };
     };
     const nearPoint = (offsetX: number, offsetY: number, x: number, y: number, name: string, cX?: number, cY?: number) => {
+        const resizePoint = resizePointRef.current / scaleRef.current;
         if (cX && cY) {
-            const resizePoint = resizePointRef.current / scaleRef.current;
             switch (name) {
                 case "t":
                 case "b":
@@ -205,14 +205,12 @@ function LabelingCanvas(
             const element = getElementAtPosition(zoomPosX, zoomPosY, drawingElements.current);
 
             if (element) {
-                const offsetX = zoomPosX - element.sX;
-                const offsetY = zoomPosY - element.sY;
                 if (element.position === "inside") {
                     actionRef.current = "moving";
                 } else {
                     actionRef.current = "resizing";
                 }
-                getSelectedElement({ ...element, offsetX, offsetY });
+                getSelectedElement({ ...element, offsetX: zoomPosX, offsetY: zoomPosY });
             } else {
                 getSelectedElement(null);
                 actionRef.current = "none";
@@ -239,51 +237,57 @@ function LabelingCanvas(
                     } else {
                         mouseCursorStyle("default");
                     }
+                } else if (actionRef.current === "moving") {
+                    if (!selectedElement) return;
+                    const { id, sX, sY, cX, cY, offsetX, offsetY } = selectedElement;
+
+                    if (!(offsetX && offsetY)) return;
+
+                    const width = cX - sX;
+                    const height = cY - sY;
+
+                    const x = offsetX - sX;
+                    const y = offsetY - sY;
+
+                    let newX = zoomPosX - x;
+                    let newY = zoomPosY - y;
+
+                    if (imageInfo) {
+                        if (newX < 0) newX = 0;
+                        if (newY < imageInfo.y) newY = imageInfo.y;
+                        if (newX + width > imageInfo.width) newX = imageInfo.width - width;
+                        if (newY + height > imageInfo.height + imageInfo.y) newY = imageInfo.height + imageInfo.y - height;
+                    }
+
+                    updateElement({ id, sX: newX, sY: newY, cX: newX + width, cY: newY + height });
+                } else if (actionRef.current === "resizing") {
+                    if (!selectedElement) return;
+                    const { position, offsetX, offsetY, ...coordinates } = selectedElement;
+                    if (!position) return;
+                    if (!(offsetX && offsetY)) return;
+                    const { id, sX, sY, cX, cY } = resizedCoordinates(zoomPosX, zoomPosY, position, coordinates);
+                    updateElement({ id, sX, sY, cX, cY });
                 }
-            }
-            if (actionRef.current === "moving") {
-                if (!selectedElement) return;
-                const { id, sX, sY, cX, cY, offsetX, offsetY } = selectedElement;
-
-                if (!(offsetX && offsetY)) return;
-
-                const width = cX - sX;
-                const height = cY - sY;
-
-                let newX = zoomPosX - offsetX;
-                let newY = zoomPosY - offsetY;
-
-                if (imageInfo) {
-                    if (newX < 0) newX = 0;
-                    if (newY < imageInfo.y) newY = imageInfo.y;
-                    if (newX + width > imageInfo.width) newX = imageInfo.width - width;
-                    if (newY + height > imageInfo.height + imageInfo.y) newY = imageInfo.height + imageInfo.y - height;
-                }
-
-                updateElement({ id, sX: newX, sY: newY, cX: newX + width, cY: newY + height });
-            } else if (actionRef.current === "resizing") {
-                if (!selectedElement) return;
-                const { position, offsetX, offsetY, ...coordinates } = selectedElement;
-                if (!position) return;
-                if (!(offsetX && offsetY)) return;
-                const { id, sX, sY, cX, cY } = resizedCoordinates(zoomPosX, zoomPosY, position, coordinates);
-                updateElement({ id, sX, sY, cX, cY });
             }
         }
         requestAnimationFrame(draw);
     };
 
     const labelingMouseUp = (zoomPosX: number, zoomPosY: number) => {
-        const index = drawingElements.current.length - 1;
-        if (index < 0) return;
-        const { id, sX, sY, cX, cY } = adjustElementCoordinates(drawingElements.current[index]);
-        if (actionRef.current === "resizing" || actionRef.current === "drawing") {
-            updateElement({ id, sX, sY, cX, cY });
-        }
         if (tool === "bounding") {
+            const index = drawingElements.current.length - 1;
+            if (index < 0) return;
+            const { id, sX, sY, cX, cY } = adjustElementCoordinates(drawingElements.current[index]);
             if (Math.abs(sX - cX) < 5 || Math.abs(sY - cY) < 5) return; // Add the box drawing clicking feature
+            updateElement({ id, sX, sY, cX, cY });
         } else if (tool === "select") {
             if (selectedElement) {
+                if (actionRef.current === "resizing") {
+                    const element = drawingElements.current.find((element) => element.id === selectedElement.id);
+                    if (!element) return;
+                    const { id, sX, sY, cX, cY } = adjustElementCoordinates(element);
+                    updateElement({ id, sX, sY, cX, cY });
+                }
                 const updateSelectedElement = [...drawingElements.current].find((element) => element.id === selectedElement.id);
                 if (updateSelectedElement) {
                     getSelectedElement(updateSelectedElement);
