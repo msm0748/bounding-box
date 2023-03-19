@@ -193,6 +193,8 @@ const StyledWrapper = styled.div`
     width: 48px;
     height: 100%;
     padding: 24px 8px;
+    position: relative;
+    z-index: 10;
 `;
 
 const StyledLine = styled.div`
