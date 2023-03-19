@@ -5,6 +5,17 @@ import LeftBar from "./LeftBar";
 import { INITIAL_POSITION, INITIAL_SIZE, MIN_SCALE, MAX_SCALE, ZOOM_SENSITIVITY, INITIAL_SCALE } from "./defaults";
 import test from "../../../assets/images/test1.jpg";
 
+const categoryList = [
+    {
+        title: "강아지",
+        color: "rgb(0, 192, 108)",
+    },
+    {
+        title: "고양이",
+        color: "rgb(255, 91, 208)",
+    },
+];
+
 function Main() {
     const drawFnRef = useRef<() => void>();
     const imageRef = useRef<HTMLImageElement>(new Image());
@@ -116,6 +127,7 @@ function Main() {
                 getElements={getElements}
                 selectedElement={selectedElement}
                 getSelectedElement={getSelectedElement}
+                categoryList={categoryList}
             />
         </StyledMain>
     );

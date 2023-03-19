@@ -15,10 +15,24 @@ interface Props {
     imageInfo: IImageInfo | null;
     mouseCursorStyle: (name: string) => void;
     isImageMove: boolean;
+    category: ICategory;
 }
 
 function LabelingCanvas(
-    { elements, canvasSize, getElements, viewPosRef, scaleRef, tool, selectedElement, getSelectedElement, imageInfo, mouseCursorStyle, isImageMove }: Props,
+    {
+        elements,
+        canvasSize,
+        getElements,
+        viewPosRef,
+        scaleRef,
+        tool,
+        selectedElement,
+        getSelectedElement,
+        imageInfo,
+        mouseCursorStyle,
+        isImageMove,
+        category,
+    }: Props,
     ref: React.Ref<LabelingCanvasdRef>
 ) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -83,9 +97,10 @@ function LabelingCanvas(
 
         ctx.lineWidth = 2 / scaleRef.current;
 
-        drawingElements.current.forEach(({ id, sX, sY, cX, cY }) => {
+        drawingElements.current.forEach(({ id, sX, sY, cX, cY, color }) => {
             const width = cX - sX;
             const height = cY - sY;
+            ctx.strokeStyle = color;
             ctx.strokeRect(sX, sY, width, height);
 
             if (selectedElement) {
@@ -112,17 +127,25 @@ function LabelingCanvas(
             }
         });
     }, [canvasSize, scaleRef, selectedElement, tool, viewPosRef, crosshair]);
+    console.log(elements);
 
-    const createElement = ({ id, sX, sY, cX, cY }: IElement) => {
+    const createElement = ({ id, sX, sY, cX, cY, color, title }: IElement) => {
         if (imageInfo) {
             const clampedSX = clamp(sX, 0, imageInfo.width);
             const clampedSY = clamp(sY, imageInfo.y, imageInfo.height + imageInfo.y);
             const clampedCX = clamp(cX, 0, imageInfo.width);
             const clampedCY = clamp(cY, imageInfo.y, imageInfo.height + imageInfo.y);
-            return { id, sX: clampedSX, sY: clampedSY, cX: clampedCX, cY: clampedCY };
+            return { id, sX: clampedSX, sY: clampedSY, cX: clampedCX, cY: clampedCY, color, title };
         } else {
-            return { id, sX, sY, cX, cY };
+            return { id, sX, sY, cX, cY, color, title };
         }
+    };
+
+    const updateElement = ({ id, sX, sY, cX, cY, color, title }: IElement) => {
+        const updateElement = createElement({ id, sX, sY, cX, cY, color, title });
+
+        const elementsCopy = [...drawingElements.current].map((element) => (element.id === id ? updateElement : element));
+        drawingElements.current = elementsCopy;
     };
 
     const nearPoint = (offsetX: number, offsetY: number, x: number, y: number, name: string, cX?: number, cY?: number) => {
@@ -184,13 +207,6 @@ function LabelingCanvas(
             .find((element) => element.position !== null);
     };
 
-    const updateElement = ({ id, sX, sY, cX, cY }: IElement) => {
-        const updateElement = createElement({ id, sX, sY, cX, cY });
-
-        const elementsCopy = [...drawingElements.current].map((element) => (element.id === id ? updateElement : element));
-        drawingElements.current = elementsCopy;
-    };
-
     const labelingMouseDown = (zoomPosX: number, zoomPosY: number) => {
         if (isImageMove === true) return;
 
@@ -198,7 +214,7 @@ function LabelingCanvas(
             if (actionRef.current !== "none") return;
             actionRef.current = "drawing";
             const id = +new Date();
-            const element = createElement({ id, sX: zoomPosX, sY: zoomPosY, cX: zoomPosX, cY: zoomPosY });
+            const element = createElement({ id, sX: zoomPosX, sY: zoomPosY, cX: zoomPosX, cY: zoomPosY, color: category.color, title: category.title });
             getSelectedElement(element);
             drawingElements.current = [...drawingElements.current, element];
         } else if (tool === "select") {
@@ -228,8 +244,8 @@ function LabelingCanvas(
                 if (actionRef.current === "drawing") {
                     if (!drawingElements.current) return;
                     const index = drawingElements.current.length - 1;
-                    const { id, sX, sY } = drawingElements.current[index];
-                    updateElement({ id, sX, sY, cX: zoomPosX, cY: zoomPosY });
+                    const { id, sX, sY, color, title } = drawingElements.current[index];
+                    updateElement({ id, sX, sY, cX: zoomPosX, cY: zoomPosY, color, title });
                 }
             } else if (tool === "select") {
                 const element = getElementAtPosition(zoomPosX, zoomPosY, drawingElements.current);
@@ -242,7 +258,7 @@ function LabelingCanvas(
                     }
                 } else if (actionRef.current === "moving") {
                     if (!selectedElement) return;
-                    const { id, sX, sY, cX, cY, offsetX, offsetY } = selectedElement;
+                    const { id, sX, sY, cX, cY, offsetX, offsetY, color, title } = selectedElement;
 
                     if (!(offsetX && offsetY)) return;
 
@@ -262,14 +278,14 @@ function LabelingCanvas(
                         if (newY + height > imageInfo.height + imageInfo.y) newY = imageInfo.height + imageInfo.y - height;
                     }
 
-                    updateElement({ id, sX: newX, sY: newY, cX: newX + width, cY: newY + height });
+                    updateElement({ id, sX: newX, sY: newY, cX: newX + width, cY: newY + height, color, title });
                 } else if (actionRef.current === "resizing") {
                     if (!selectedElement) return;
                     const { position, offsetX, offsetY, ...coordinates } = selectedElement;
                     if (!position) return;
                     if (!(offsetX && offsetY)) return;
-                    const { id, sX, sY, cX, cY } = resizedCoordinates(zoomPosX, zoomPosY, position, coordinates, offsetX, offsetY);
-                    updateElement({ id, sX, sY, cX, cY });
+                    const { id, sX, sY, cX, cY, color, title } = resizedCoordinates(zoomPosX, zoomPosY, position, coordinates, offsetX, offsetY);
+                    updateElement({ id, sX, sY, cX, cY, color, title });
                 }
             }
         }
@@ -280,16 +296,16 @@ function LabelingCanvas(
         if (tool === "bounding") {
             const index = drawingElements.current.length - 1;
             if (index < 0) return;
-            const { id, sX, sY, cX, cY } = adjustElementCoordinates(drawingElements.current[index]);
+            const { id, sX, sY, cX, cY, color, title } = adjustElementCoordinates(drawingElements.current[index]);
             if (Math.abs(sX - cX) < 5 || Math.abs(sY - cY) < 5) return; // Add the box drawing clicking feature
-            updateElement({ id, sX, sY, cX, cY });
+            updateElement({ id, sX, sY, cX, cY, color, title });
         } else if (tool === "select") {
             if (selectedElement) {
                 if (actionRef.current === "resizing") {
                     const element = drawingElements.current.find((element) => element.id === selectedElement.id);
                     if (!element) return;
-                    const { id, sX, sY, cX, cY } = adjustElementCoordinates(element);
-                    updateElement({ id, sX, sY, cX, cY });
+                    const { id, sX, sY, cX, cY, color, title } = adjustElementCoordinates(element);
+                    updateElement({ id, sX, sY, cX, cY, color, title });
                 }
                 const updateSelectedElement = [...drawingElements.current].find((element) => element.id === selectedElement.id);
                 if (updateSelectedElement) {

@@ -18,36 +18,36 @@ export const cursorForPosition = (position: string) => {
 };
 
 export const adjustElementCoordinates = (element: IElement) => {
-    const { id, sX, sY, cX, cY } = element;
+    const { id, sX, sY, cX, cY, color, title } = element;
     const minX = Math.min(sX, cX);
     const maxX = Math.max(sX, cX);
     const minY = Math.min(sY, cY);
     const maxY = Math.max(sY, cY);
-    return { id, sX: minX, sY: minY, cX: maxX, cY: maxY };
+    return { id, sX: minX, sY: minY, cX: maxX, cY: maxY, color, title };
 };
 
 export const resizedCoordinates = (zoomPosX: number, zoomPosY: number, position: string, coordinates: IElement, offsetX: number, offsetY: number) => {
-    const { id, sX, sY, cX, cY } = coordinates;
+    const { id, sX, sY, cX, cY, color, title } = coordinates;
     const dx = zoomPosX - offsetX;
     const dy = zoomPosY - offsetY;
 
     switch (position) {
         case "tl":
-            return { id, sX: sX + dx, sY: sY + dy, cX, cY };
+            return { id, sX: sX + dx, sY: sY + dy, cX, cY, color, title };
         case "tr":
-            return { id, sX, sY: sY + dy, cX: cX + dx, cY };
+            return { id, sX, sY: sY + dy, cX: cX + dx, cY, color, title };
         case "br":
-            return { id, sX, sY, cX: cX + dx, cY: cY + dy };
+            return { id, sX, sY, cX: cX + dx, cY: cY + dy, color, title };
         case "bl":
-            return { id, sX: sX + dx, sY, cX, cY: cY + dy };
+            return { id, sX: sX + dx, sY, cX, cY: cY + dy, color, title };
         case "b":
-            return { id, sX, sY, cX, cY: cY + dy };
+            return { id, sX, sY, cX, cY: cY + dy, color, title };
         case "t":
-            return { id, sX, sY: sY + dy, cX, cY };
+            return { id, sX, sY: sY + dy, cX, cY, color, title };
         case "r":
-            return { id, sX, sY, cX: cX + dx, cY };
+            return { id, sX, sY, cX: cX + dx, cY, color, title };
         case "l":
-            return { id, sX: sX + dx, sY, cX, cY };
+            return { id, sX: sX + dx, sY, cX, cY, color, title };
         default:
             return coordinates;
     }

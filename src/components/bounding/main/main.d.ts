@@ -23,7 +23,7 @@ interface IOffset {
     offsetY: number;
 }
 
-interface IElement {
+interface IElement extends ICategory {
     id: number;
     sX: number;
     sY: number;
@@ -31,7 +31,12 @@ interface IElement {
     cY: number;
 }
 
-interface ISelectedElement extends IElement {
+interface ICategory {
+    color: string;
+    title: string;
+}
+
+interface ISelectedElement extends IElement, ICategory {
     position?: string | null;
     offsetX?: number;
     offsetY?: number;

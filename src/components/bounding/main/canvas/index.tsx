@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { INITIAL_POSITION } from "../defaults";
 import ImageCanvas from "./ImageCanvas";
 import LabelingCanvas from "./LabelingCanvas";
+import CategoryDropDown from "../../../common/category";
 
 interface Props {
     imageRef: MutableRefObject<HTMLImageElement>;
@@ -20,6 +21,7 @@ interface Props {
     getDrawFn: (fn: () => void) => void;
     selectedElement: ISelectedElement | null;
     getSelectedElement: (element: ISelectedElement | null) => void;
+    categoryList: ICategory[];
 }
 
 function Canvas({
@@ -38,6 +40,7 @@ function Canvas({
     getElements,
     selectedElement,
     getSelectedElement,
+    categoryList,
 }: Props) {
     const handleImageCanvasRef = useRef<ImageCanvasdRef>(null);
     const handleLabelingCanvasRef = useRef<LabelingCanvasdRef>(null);
@@ -46,6 +49,11 @@ function Canvas({
     const startPosRef = useRef(INITIAL_POSITION);
     const [isImageMove, setIsImageMove] = useState(false);
     const [isGrabbing, setIsGrabbing] = useState(false);
+    const [category, setCategory] = useState<ICategory>(categoryList[0]);
+
+    const onChangeCategory = (selectedCategory: ICategory) => {
+        setCategory(selectedCategory);
+    };
 
     const draw = useCallback(() => {
         if (handleImageCanvasRef.current) {
@@ -202,41 +210,48 @@ function Canvas({
     }, []);
 
     return (
-        <StyledWrapper
-            ref={wrapperRef}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onWheel={handleWheel}
-            onMouseLeave={handleMouseLeave}
-        >
-            <ImageCanvas
-                ref={handleImageCanvasRef}
-                imageRef={imageRef}
-                canvasSize={canvasSize}
-                startPosRef={startPosRef}
-                viewPosRef={viewPosRef}
-                isTouchRef={isTouchRef}
-                scaleRef={scaleRef}
-                setViewPosRef={setViewPosRef}
-                handleZoom={handleZoom}
-                imageInfo={imageInfo}
-            ></ImageCanvas>
-            <LabelingCanvas
-                ref={handleLabelingCanvasRef}
-                canvasSize={canvasSize}
-                elements={elements}
-                viewPosRef={viewPosRef}
-                scaleRef={scaleRef}
-                tool={tool}
-                getElements={getElements}
-                selectedElement={selectedElement}
-                getSelectedElement={getSelectedElement}
-                imageInfo={imageInfo}
-                mouseCursorStyle={mouseCursorStyle}
-                isImageMove={isImageMove}
-            ></LabelingCanvas>
-        </StyledWrapper>
+        <>
+            <StyledWrapper ref={wrapperRef}>
+                {tool === "bounding" && (
+                    <CategoryDropDown category={category} onChangeCategory={onChangeCategory} categoryList={categoryList} isAbsolute={true} />
+                )}
+                <div
+                    onMouseDown={handleMouseDown}
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    onWheel={handleWheel}
+                    onMouseLeave={handleMouseLeave}
+                >
+                    <ImageCanvas
+                        ref={handleImageCanvasRef}
+                        imageRef={imageRef}
+                        canvasSize={canvasSize}
+                        startPosRef={startPosRef}
+                        viewPosRef={viewPosRef}
+                        isTouchRef={isTouchRef}
+                        scaleRef={scaleRef}
+                        setViewPosRef={setViewPosRef}
+                        handleZoom={handleZoom}
+                        imageInfo={imageInfo}
+                    ></ImageCanvas>
+                    <LabelingCanvas
+                        ref={handleLabelingCanvasRef}
+                        canvasSize={canvasSize}
+                        elements={elements}
+                        viewPosRef={viewPosRef}
+                        scaleRef={scaleRef}
+                        tool={tool}
+                        getElements={getElements}
+                        selectedElement={selectedElement}
+                        getSelectedElement={getSelectedElement}
+                        imageInfo={imageInfo}
+                        mouseCursorStyle={mouseCursorStyle}
+                        isImageMove={isImageMove}
+                        category={category}
+                    ></LabelingCanvas>
+                </div>
+            </StyledWrapper>
+        </>
     );
 }
 
