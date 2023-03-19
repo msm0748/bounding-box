@@ -53,12 +53,18 @@ function Main() {
         }
     }, []);
 
-    const setViewPosRef = useCallback(({ x, y }: IPosition) => {
-        viewPosRef.current = {
-            x,
-            y,
-        };
-    }, []);
+    const setViewPosRef = useCallback(
+        ({ x, y }: IPosition) => {
+            const maxViewPosX = Math.min(Math.max(x, -(canvasSize.width * scaleRef.current)), canvasSize.width);
+            const maxViewPosY = Math.min(Math.max(y, -(canvasSize.height * scaleRef.current)), canvasSize.height);
+
+            viewPosRef.current = {
+                x: maxViewPosX,
+                y: maxViewPosY,
+            };
+        },
+        [canvasSize]
+    );
 
     const getDrawFn = useCallback((fn: () => void) => {
         drawFnRef.current = fn;

@@ -123,6 +123,10 @@ function Canvas({
         }
     };
 
+    const handleMouseLeave = () => {
+        setIsGrabbing(false);
+    };
+
     const handleWheel = (e: React.WheelEvent) => {
         if (handleImageCanvasRef.current) {
             handleImageCanvasRef.current.zoomWheel(e);
@@ -198,7 +202,14 @@ function Canvas({
     }, []);
 
     return (
-        <StyledWrapper ref={wrapperRef} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onWheel={handleWheel}>
+        <StyledWrapper
+            ref={wrapperRef}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onWheel={handleWheel}
+            onMouseLeave={handleMouseLeave}
+        >
             <ImageCanvas
                 ref={handleImageCanvasRef}
                 imageRef={imageRef}
