@@ -340,9 +340,12 @@ function LabelingCanvas(
     useEffect(() => {
         if (tool === "bounding" && actionRef.current === "none") {
             getSelectedElement(null);
+            highlightBox(undefined);
+        } else if (tool === "move") {
+            highlightBox(undefined);
         }
         draw();
-    }, [tool, getSelectedElement, draw]);
+    }, [tool, getSelectedElement, draw, highlightBox]);
 
     useImperativeHandle(ref, () => ({
         labelingMouseDown,

@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import StyledColorPoint from "./ColorPoint.style";
+import ColorPoint from "./ColorPoint";
 
 interface Props extends ICategory {
     onChangeCategory: (selectedCategory: ICategory) => void;
@@ -14,8 +14,7 @@ function CategoryItem({ title, color, onChangeCategory, handleDropDown }: Props)
     return (
         <>
             <StyledItem onClick={hadleOnClick}>
-                <StyledColorPoint color={color} />
-                <div>{title}</div>
+                <ColorPoint title={title} color={color} />
             </StyledItem>
         </>
     );

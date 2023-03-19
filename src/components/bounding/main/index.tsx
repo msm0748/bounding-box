@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, useRef } from "react";
 import styled from "styled-components";
 import Canvas from "./canvas";
 import LeftBar from "./LeftBar";
+import RightBar from "./RightBar";
 import { INITIAL_POSITION, INITIAL_SIZE, MIN_SCALE, MAX_SCALE, ZOOM_SENSITIVITY, INITIAL_SCALE } from "./defaults";
 import test from "../../../assets/images/test1.jpg";
 
@@ -140,6 +141,7 @@ function Main() {
                 hoveredBoxId={hoveredBoxId}
                 highlightBox={highlightBox}
             />
+            <RightBar elements={elements}></RightBar>
         </StyledMain>
     );
 }
