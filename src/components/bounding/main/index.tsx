@@ -3,6 +3,7 @@ import styled from "styled-components";
 import Canvas from "./canvas";
 import LeftBar from "./LeftBar";
 import { INITIAL_POSITION, INITIAL_SIZE, MIN_SCALE, MAX_SCALE, ZOOM_SENSITIVITY, INITIAL_SCALE } from "./defaults";
+import test from "../../../assets/images/test1.jpg";
 
 function Main() {
     const drawFnRef = useRef<() => void>();
@@ -19,7 +20,7 @@ function Main() {
     // setting image
     useEffect(() => {
         const img = imageRef.current;
-        img.src = "https://s3.marpple.co/files/u_218933/2020/1/original/14474423ccd1acb63fab43dc936ab01302c64b547577e2e.png";
+        img.src = test;
         img.onload = () => {
             const imageWidth = canvasSize.width;
             const imageHeight = (canvasSize.width * img.height) / img.width;

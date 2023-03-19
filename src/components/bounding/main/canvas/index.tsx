@@ -103,7 +103,7 @@ function Canvas({
         const { zoomPosX, zoomPosY } = getZoomMousePosition(offsetX, offsetY);
 
         if (handleLabelingCanvasRef.current) {
-            handleLabelingCanvasRef.current.labelingMouseMove(zoomPosX, zoomPosY);
+            handleLabelingCanvasRef.current.labelingMouseMove(e, zoomPosX, zoomPosY);
         }
     };
 

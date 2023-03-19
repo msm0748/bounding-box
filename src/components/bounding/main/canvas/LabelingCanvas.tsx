@@ -1,6 +1,7 @@
 import { useRef, forwardRef, useImperativeHandle, MutableRefObject, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import { cursorForPosition, adjustElementCoordinates, resizedCoordinates, measurePaddingBoxSize, clamp } from "./utils/labelingUtils";
+import { INITIAL_POSITION } from "../defaults";
 
 interface Props {
     elements: IElement[];
@@ -24,6 +25,7 @@ function LabelingCanvas(
     const actionRef = useRef<Action>("none");
     const drawingElements = useRef<IElement[]>([]);
     const resizePointRef = useRef(9);
+    const currentMousePos = useRef(INITIAL_POSITION);
 
     // init
     useEffect(() => {
@@ -33,12 +35,50 @@ function LabelingCanvas(
         canvas.height = canvasSize.height;
     }, [canvasSize]);
 
+    const crosshair = useCallback(
+        (ctx: CanvasRenderingContext2D) => {
+            if (tool !== "bounding") return;
+            let x = currentMousePos.current.x;
+            let y = currentMousePos.current.y;
+            const viewPosX = viewPosRef.current.x;
+            const viewPosY = viewPosRef.current.y;
+            const scale = scaleRef.current;
+
+            if (imageInfo) {
+                if (x < viewPosX) x = viewPosX;
+                if (x > viewPosX + canvasSize.width * scale) x = viewPosX + canvasSize.width * scale;
+                if (y < viewPosY + imageInfo.y * scale) y = viewPosY + imageInfo.y * scale;
+                if (y > viewPosY + (imageInfo.y + imageInfo.height) * scale) y = viewPosY + (imageInfo.y + imageInfo.height) * scale;
+            }
+
+            ctx.setLineDash([2, 5]);
+            ctx.lineWidth = 1;
+            ctx.globalAlpha = 1;
+            ctx.strokeStyle = "black";
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvasSize.width, y);
+            ctx.stroke();
+            ctx.closePath();
+
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvasSize.height);
+            ctx.stroke();
+            ctx.closePath();
+            ctx.setLineDash([0]);
+        },
+        [canvasSize, tool, scaleRef, viewPosRef, imageInfo]
+    );
+
     const draw = useCallback(() => {
         if (!canvasRef.current) return;
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
         canvas.width = canvasSize.width;
+        crosshair(ctx);
+
         ctx.setTransform(scaleRef.current, 0, 0, scaleRef.current, viewPosRef.current.x, viewPosRef.current.y);
 
         ctx.lineWidth = 2 / scaleRef.current;
@@ -71,7 +111,7 @@ function LabelingCanvas(
                 }
             }
         });
-    }, [canvasSize, scaleRef, selectedElement, tool, viewPosRef]);
+    }, [canvasSize, scaleRef, selectedElement, tool, viewPosRef, crosshair]);
 
     const createElement = ({ id, sX, sY, cX, cY }: IElement) => {
         if (imageInfo) {
@@ -179,7 +219,10 @@ function LabelingCanvas(
         requestAnimationFrame(draw);
     };
 
-    const labelingMouseMove = (zoomPosX: number, zoomPosY: number) => {
+    const labelingMouseMove = (e: React.MouseEvent, zoomPosX: number, zoomPosY: number) => {
+        const { offsetX, offsetY } = e.nativeEvent;
+        currentMousePos.current = { x: offsetX, y: offsetY };
+
         if (isImageMove === false) {
             if (tool === "bounding") {
                 if (actionRef.current === "drawing") {
