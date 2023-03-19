@@ -62,7 +62,7 @@ function LabelingCanvas(
 
             if (selectedElement) {
                 if (id === selectedElement.id) {
-                    const resizePoint = resizePointRef.current + 2 / scaleRef.current;
+                    const resizePoint = resizePointRef.current / scaleRef.current + 3 / scaleRef.current;
 
                     ctx.fillStyle = "white";
                     measurePaddingBoxSize(ctx, sX, sY, cX, cY);
@@ -113,7 +113,7 @@ function LabelingCanvas(
                     return y < offsetY && cY > offsetY && Math.abs(offsetX - x) < resizePoint ? name : null;
             }
         } else {
-            return Math.abs(offsetX - x) < 5 && Math.abs(offsetY - y) < 5 ? name : null;
+            return Math.abs(offsetX - x) < resizePoint && Math.abs(offsetY - y) < resizePoint ? name : null;
         }
     };
 
@@ -230,6 +230,7 @@ function LabelingCanvas(
             actionRef.current = "drawing";
             const id = +new Date();
             const element = createElement({ id, sX: zoomPosX, sY: zoomPosY, cX: zoomPosX, cY: zoomPosY });
+            getSelectedElement(element);
             drawingElements.current = [...drawingElements.current, element];
         } else if (tool === "select") {
             const element = getElementAtPosition(zoomPosX, zoomPosY, drawingElements.current);
@@ -334,7 +335,7 @@ function LabelingCanvas(
     };
 
     useEffect(() => {
-        if (tool === "bounding") {
+        if (tool === "bounding" && actionRef.current === "none") {
             getSelectedElement(null);
         }
         draw();
