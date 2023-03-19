@@ -16,6 +16,8 @@ interface Props {
     mouseCursorStyle: (name: string) => void;
     isImageMove: boolean;
     category: ICategory;
+    hoveredBoxId: number | undefined;
+    highlightBox: (element: ISelectedElement | undefined) => void;
 }
 
 function LabelingCanvas(
@@ -32,6 +34,8 @@ function LabelingCanvas(
         mouseCursorStyle,
         isImageMove,
         category,
+        hoveredBoxId,
+        highlightBox,
     }: Props,
     ref: React.Ref<LabelingCanvasdRef>
 ) {
@@ -103,6 +107,17 @@ function LabelingCanvas(
             ctx.strokeStyle = color;
             ctx.strokeRect(sX, sY, width, height);
 
+            if (hoveredBoxId) {
+                if (hoveredBoxId === id) {
+                    if (!selectedElement || selectedElement.id !== hoveredBoxId) {
+                        ctx.globalAlpha = 0.5;
+                        ctx.fillStyle = color;
+                        ctx.fillRect(sX, sY, width, height);
+                        ctx.globalAlpha = 1;
+                    }
+                }
+            }
+
             if (selectedElement) {
                 if (id === selectedElement.id) {
                     const resizePoint = resizePointRef.current / scaleRef.current + 3 / scaleRef.current;
@@ -126,8 +141,7 @@ function LabelingCanvas(
                 }
             }
         });
-    }, [canvasSize, scaleRef, selectedElement, tool, viewPosRef, crosshair]);
-    console.log(elements);
+    }, [canvasSize, scaleRef, selectedElement, tool, viewPosRef, crosshair, hoveredBoxId]);
 
     const createElement = ({ id, sX, sY, cX, cY, color, title }: IElement) => {
         if (imageInfo) {
@@ -249,6 +263,7 @@ function LabelingCanvas(
                 }
             } else if (tool === "select") {
                 const element = getElementAtPosition(zoomPosX, zoomPosY, drawingElements.current);
+                highlightBox(element);
                 if (actionRef.current === "none") {
                     if (element) {
                         if (!element.position) return;

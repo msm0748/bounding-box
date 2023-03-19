@@ -22,6 +22,8 @@ interface Props {
     selectedElement: ISelectedElement | null;
     getSelectedElement: (element: ISelectedElement | null) => void;
     categoryList: ICategory[];
+    hoveredBoxId: number | undefined;
+    highlightBox: (element: ISelectedElement | undefined) => void;
 }
 
 function Canvas({
@@ -41,6 +43,8 @@ function Canvas({
     selectedElement,
     getSelectedElement,
     categoryList,
+    hoveredBoxId,
+    highlightBox,
 }: Props) {
     const handleImageCanvasRef = useRef<ImageCanvasdRef>(null);
     const handleLabelingCanvasRef = useRef<LabelingCanvasdRef>(null);
@@ -248,6 +252,8 @@ function Canvas({
                         mouseCursorStyle={mouseCursorStyle}
                         isImageMove={isImageMove}
                         category={category}
+                        hoveredBoxId={hoveredBoxId}
+                        highlightBox={highlightBox}
                     ></LabelingCanvas>
                 </div>
             </StyledWrapper>

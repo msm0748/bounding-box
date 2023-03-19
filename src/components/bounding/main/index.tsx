@@ -27,6 +27,7 @@ function Main() {
     const [elements, setElements] = useState<IElement[]>([]);
     const [selectedElement, setSelectedElement] = useState<ISelectedElement | null>(null);
     const [imageInfo, setImageInfo] = useState<IImageInfo | null>(null);
+    const [hoveredBoxId, setHoverBoxId] = useState<number | undefined>();
 
     // setting image
     useEffect(() => {
@@ -98,6 +99,14 @@ function Main() {
         setSelectedElement(element);
     }, []);
 
+    const highlightBox = useCallback((element: ISelectedElement | undefined) => {
+        if (element) {
+            setHoverBoxId(element.id);
+        } else {
+            setHoverBoxId(undefined);
+        }
+    }, []);
+
     return (
         <StyledMain>
             <LeftBar
@@ -128,6 +137,8 @@ function Main() {
                 selectedElement={selectedElement}
                 getSelectedElement={getSelectedElement}
                 categoryList={categoryList}
+                hoveredBoxId={hoveredBoxId}
+                highlightBox={highlightBox}
             />
         </StyledMain>
     );
