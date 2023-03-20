@@ -104,6 +104,21 @@ function Main() {
         }
     }, []);
 
+    useEffect(() => {
+        if (!selectedElement) return;
+        const { id } = selectedElement;
+        const deleteElement = (e: KeyboardEvent) => {
+            if (e.code === "Delete" || e.code === "Backspace") {
+                setElements((elements) => elements.filter((element) => element.id !== id));
+                setSelectedElement(null);
+            }
+        };
+        document.addEventListener("keydown", deleteElement);
+        return () => {
+            document.removeEventListener("keydown", deleteElement);
+        };
+    }, [selectedElement, setElements, setSelectedElement]);
+
     return (
         <StyledMain>
             <LeftBar
@@ -137,7 +152,16 @@ function Main() {
                 hoveredBoxId={hoveredBoxId}
                 highlightBox={highlightBox}
             />
-            <RightBar elements={elements}></RightBar>
+            <RightBar
+                elements={elements}
+                selectedElement={selectedElement}
+                getSelectedElement={getSelectedElement}
+                hoveredBoxId={hoveredBoxId}
+                highlightBox={highlightBox}
+                onToolChange={handleToolChange}
+                categoryList={categoryList}
+                setElements={setElements}
+            ></RightBar>
         </StyledMain>
     );
 }

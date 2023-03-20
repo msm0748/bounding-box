@@ -1,11 +1,52 @@
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import styled from "styled-components";
 import ColorPoint from "../../common/category/ColorPoint";
+import DropDown from "../../common/category";
 
 interface Props {
     elements: IElement[];
+    selectedElement: ISelectedElement | null;
+    hoveredBoxId: number | undefined;
+    getSelectedElement: (element: ISelectedElement | null) => void;
+    highlightBox: (element: ISelectedElement | undefined) => void;
+    onToolChange: (newTool: Tool) => void;
+    categoryList: ICategory[];
+    setElements: Dispatch<SetStateAction<IElement[]>>;
 }
 
-function RightBar({ elements }: Props) {
+function RightBar({ elements, selectedElement, hoveredBoxId, getSelectedElement, highlightBox, onToolChange, categoryList, setElements }: Props) {
+    const [category, setCategory] = useState<ICategory>(categoryList[0]);
+
+    const onChangeCategory = (selectedCategory: ICategory) => {
+        setCategory(selectedCategory);
+    };
+
+    const handleActive = (element: IElement) => {
+        const { title, color } = element;
+        setCategory({ title, color });
+        onToolChange("select");
+        getSelectedElement(element);
+    };
+
+    const handleDeleteElement = (e: React.MouseEvent, id: number) => {
+        e.stopPropagation();
+        setElements((elements) => elements.filter((element) => element.id !== id));
+        getSelectedElement(null);
+    };
+
+    useEffect(() => {
+        if (!selectedElement) return;
+        setCategory({ title: selectedElement.title, color: selectedElement.color });
+    }, [selectedElement]);
+
+    // Update elements after changing the category
+    useEffect(() => {
+        if (!selectedElement) return;
+        setElements((elements) =>
+            elements.map((element) => (element.id === selectedElement.id ? { ...element, color: category.color, title: category.title } : element))
+        );
+    }, [category, setElements, selectedElement]);
+
     return (
         <StyledWrap>
             <div>
@@ -13,11 +54,17 @@ function RightBar({ elements }: Props) {
                 <StyledElementsListWrap>
                     <ul>
                         {elements.map((element) => (
-                            <StyledItem key={element.id}>
+                            <StyledItem
+                                key={element.id}
+                                className={`${selectedElement?.id === element.id ? "active" : ""} ${hoveredBoxId === element.id ? "hover" : ""}`}
+                                onClick={() => handleActive(element)}
+                                onMouseEnter={() => highlightBox(element)}
+                                onMouseLeave={() => highlightBox(undefined)}
+                            >
                                 <StyledBlock>
                                     <ColorPoint color={element.color} title={element.title} />
                                 </StyledBlock>
-                                <StyledSvgBlock>
+                                <StyledSvgBlock onClick={(e) => handleDeleteElement(e, element.id)}>
                                     <svg
                                         width="16"
                                         height="16"
@@ -53,6 +100,14 @@ function RightBar({ elements }: Props) {
                         ))}
                     </ul>
                 </StyledElementsListWrap>
+                {selectedElement !== null && (
+                    <StyledCategoryWrap>
+                        <StyledCategoryTitle>카테고리</StyledCategoryTitle>
+                        <StyledDropDownWrap>
+                            <DropDown category={category} onChangeCategory={onChangeCategory} categoryList={categoryList} />
+                        </StyledDropDownWrap>
+                    </StyledCategoryWrap>
+                )}
             </div>
             <div>
                 <StyledSubmitWrap>
@@ -121,4 +176,20 @@ const StyledSubmitBtn = styled.button`
     width: 100%;
     height: 56px;
     color: white;
+`;
+
+const StyledCategoryWrap = styled.div`
+    width: 100%;
+    height: 136px;
+    background: rgb(247, 247, 249);
+`;
+
+const StyledDropDownWrap = styled.div`
+    padding: 15px;
+`;
+
+const StyledCategoryTitle = styled.div`
+    padding: 15px;
+    color: rgb(52, 55, 59);
+    background: rgb(235, 236, 239);
 `;
