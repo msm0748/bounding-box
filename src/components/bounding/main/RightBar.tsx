@@ -12,9 +12,28 @@ interface Props {
     onToolChange: (newTool: Tool) => void;
     categoryList: ICategory[];
     setElements: Dispatch<SetStateAction<IElement[]>>;
+    imageList: string[];
+    imageIndex: number;
+    setImageIndex: Dispatch<SetStateAction<number>>;
+    setIsReset: () => void;
+    imageInfo: IImageInfo | null;
 }
 
-function RightBar({ elements, selectedElement, hoveredBoxId, getSelectedElement, highlightBox, onToolChange, categoryList, setElements }: Props) {
+function RightBar({
+    elements,
+    selectedElement,
+    hoveredBoxId,
+    getSelectedElement,
+    highlightBox,
+    onToolChange,
+    categoryList,
+    setElements,
+    imageList,
+    imageIndex,
+    setImageIndex,
+    setIsReset,
+    imageInfo,
+}: Props) {
     const [category, setCategory] = useState<ICategory>(categoryList[0]);
 
     const onChangeCategory = (selectedCategory: ICategory) => {
@@ -32,6 +51,33 @@ function RightBar({ elements, selectedElement, hoveredBoxId, getSelectedElement,
         e.stopPropagation();
         setElements((elements) => elements.filter((element) => element.id !== id));
         getSelectedElement(null);
+    };
+
+    const calculateOriginalPosition = (x: number, y: number) => {
+        if (!imageInfo) return;
+        const calculateOriginalPosX = (imageInfo.originalImageSize.width / imageInfo.width) * x;
+        const calculateOriginalPosY = (imageInfo.originalImageSize.height / imageInfo.height) * (y - imageInfo.y);
+
+        return [calculateOriginalPosX, calculateOriginalPosY];
+    };
+
+    const handleSubmit = () => {
+        setElements([]);
+        getSelectedElement(null);
+        setIsReset();
+        const result = elements.map(({ id, sX, sY, cX, cY, title }) => ({
+            id: id,
+            label: title,
+            points: [calculateOriginalPosition(sX, sY), calculateOriginalPosition(cX, cY)],
+            type: "rectangle",
+        }));
+        console.log(result);
+        if (imageIndex < imageList.length - 1) {
+            setImageIndex((prev) => prev + 1);
+        } else {
+            alert("더 이상 가져올 이미지가 없습니다.");
+            setImageIndex(0);
+        }
     };
 
     useEffect(() => {
@@ -111,7 +157,7 @@ function RightBar({ elements, selectedElement, hoveredBoxId, getSelectedElement,
             </div>
             <div>
                 <StyledSubmitWrap>
-                    <StyledSubmitBtn>제출하기</StyledSubmitBtn>
+                    <StyledSubmitBtn onClick={handleSubmit}>제출하기</StyledSubmitBtn>
                 </StyledSubmitWrap>
             </div>
         </StyledWrap>

@@ -16,6 +16,7 @@ interface ISize {
 
 interface IImageInfo extends IPosition, ISize {
     src: string;
+    originalImageSize: ISize;
 }
 
 interface IOffset {

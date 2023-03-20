@@ -4,7 +4,9 @@ import Canvas from "./canvas";
 import LeftBar from "./LeftBar";
 import RightBar from "./RightBar";
 import { INITIAL_POSITION, INITIAL_SIZE, MIN_SCALE, MAX_SCALE, ZOOM_SENSITIVITY, INITIAL_SCALE } from "./defaults";
-import test from "../../../assets/images/test1.jpg";
+import test1 from "../../../assets/images/test1.jpg";
+import test2 from "../../../assets/images/test2.jpg";
+import test3 from "../../../assets/images/test3.jpg";
 
 const categoryList = [
     {
@@ -16,6 +18,8 @@ const categoryList = [
         color: "rgb(255, 91, 208)",
     },
 ];
+
+const imageList = [test1, test2, test3];
 
 function Main() {
     const drawFnRef = useRef<() => void>();
@@ -29,19 +33,21 @@ function Main() {
     const [selectedElement, setSelectedElement] = useState<ISelectedElement | null>(null);
     const [imageInfo, setImageInfo] = useState<IImageInfo | null>(null);
     const [hoveredBoxId, setHoverBoxId] = useState<number | undefined>();
+    const [imageIndex, setImageIndex] = useState(0);
 
     // setting image
     useEffect(() => {
         const img = imageRef.current;
-        img.src = test;
+        img.src = imageList[imageIndex];
         img.onload = () => {
             const imageWidth = canvasSize.width;
             const imageHeight = (canvasSize.width * img.height) / img.width;
             const imagePosX = 0;
             const imagePosY = (canvasSize.height - imageHeight) / 2;
-            setImageInfo({ src: img.src, x: imagePosX, y: imagePosY, width: imageWidth, height: imageHeight });
+            const originalImageSize = { width: img.width, height: img.height };
+            setImageInfo({ src: img.src, x: imagePosX, y: imagePosY, width: imageWidth, height: imageHeight, originalImageSize });
         };
-    }, [canvasSize]);
+    }, [canvasSize, imageIndex]);
 
     const updateCanvasSize = useCallback(({ width, height }: ISize) => {
         setCanvasSize({ width, height });
@@ -161,6 +167,11 @@ function Main() {
                 onToolChange={handleToolChange}
                 categoryList={categoryList}
                 setElements={setElements}
+                imageList={imageList}
+                imageIndex={imageIndex}
+                setImageIndex={setImageIndex}
+                setIsReset={setIsReset}
+                imageInfo={imageInfo}
             ></RightBar>
         </StyledMain>
     );
