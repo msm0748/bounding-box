@@ -1,4 +1,4 @@
-import { MutableRefObject, useCallback, useEffect, useRef, useState } from "react";
+import { Dispatch, MutableRefObject, SetStateAction, useCallback, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { INITIAL_POSITION } from "../defaults";
 import ImageCanvas from "./ImageCanvas";
@@ -17,7 +17,7 @@ interface Props {
     updateCanvasSize: ({ width, height }: ISize) => void;
     imageInfo: IImageInfo | null;
     elements: IElement[];
-    getElements: (newElements: IElement[]) => void;
+    setElements: Dispatch<SetStateAction<IElement[]>>;
     getDrawFn: (fn: () => void) => void;
     selectedElement: ISelectedElement | null;
     getSelectedElement: (element: ISelectedElement | null) => void;
@@ -39,7 +39,7 @@ function Canvas({
     imageInfo,
     elements,
     getDrawFn,
-    getElements,
+    setElements,
     selectedElement,
     getSelectedElement,
     categoryList,
@@ -245,7 +245,7 @@ function Canvas({
                         viewPosRef={viewPosRef}
                         scaleRef={scaleRef}
                         tool={tool}
-                        getElements={getElements}
+                        setElements={setElements}
                         selectedElement={selectedElement}
                         getSelectedElement={getSelectedElement}
                         imageInfo={imageInfo}

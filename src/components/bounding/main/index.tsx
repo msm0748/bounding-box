@@ -92,10 +92,6 @@ function Main() {
         setReset((prev) => !prev);
     }, []);
 
-    const getElements = useCallback((newElements: IElement[]) => {
-        setElements(newElements);
-    }, []);
-
     const getSelectedElement = useCallback((element: ISelectedElement | null) => {
         setSelectedElement(element);
     }, []);
@@ -134,7 +130,7 @@ function Main() {
                 imageInfo={imageInfo}
                 elements={elements}
                 getDrawFn={getDrawFn}
-                getElements={getElements}
+                setElements={setElements}
                 selectedElement={selectedElement}
                 getSelectedElement={getSelectedElement}
                 categoryList={categoryList}

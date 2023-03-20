@@ -1,4 +1,4 @@
-import { useRef, forwardRef, useImperativeHandle, MutableRefObject, useEffect, useCallback } from "react";
+import { useRef, useState, forwardRef, useImperativeHandle, MutableRefObject, useEffect, useCallback, Dispatch, SetStateAction } from "react";
 import styled from "styled-components";
 import { cursorForPosition, adjustElementCoordinates, resizedCoordinates, measurePaddingBoxSize, clamp } from "./utils/labelingUtils";
 import { INITIAL_POSITION } from "../defaults";
@@ -9,7 +9,7 @@ interface Props {
     viewPosRef: MutableRefObject<IPosition>;
     scaleRef: MutableRefObject<number>;
     tool: Tool;
-    getElements: (newElements: IElement[]) => void;
+    setElements: Dispatch<SetStateAction<IElement[]>>;
     selectedElement: ISelectedElement | null;
     getSelectedElement: (element: ISelectedElement | null) => void;
     imageInfo: IImageInfo | null;
@@ -24,7 +24,7 @@ function LabelingCanvas(
     {
         elements,
         canvasSize,
-        getElements,
+        setElements,
         viewPosRef,
         scaleRef,
         tool,
@@ -40,8 +40,7 @@ function LabelingCanvas(
     ref: React.Ref<LabelingCanvasdRef>
 ) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const actionRef = useRef<Action>("none");
-    const drawingElements = useRef<IElement[]>([]);
+    const [action, setAction] = useState<Action>("none");
     const resizePointRef = useRef(9);
     const currentMousePos = useRef(INITIAL_POSITION);
 
@@ -101,7 +100,7 @@ function LabelingCanvas(
 
         ctx.lineWidth = 2 / scaleRef.current;
 
-        drawingElements.current.forEach(({ id, sX, sY, cX, cY, color }) => {
+        elements.forEach(({ id, sX, sY, cX, cY, color }) => {
             const width = cX - sX;
             const height = cY - sY;
             ctx.strokeStyle = color;
@@ -141,7 +140,7 @@ function LabelingCanvas(
                 }
             }
         });
-    }, [canvasSize, scaleRef, selectedElement, tool, viewPosRef, crosshair, hoveredBoxId]);
+    }, [canvasSize, scaleRef, selectedElement, tool, viewPosRef, crosshair, hoveredBoxId, elements]);
 
     const createElement = ({ id, sX, sY, cX, cY, color, title }: IElement) => {
         if (imageInfo) {
@@ -158,8 +157,8 @@ function LabelingCanvas(
     const updateElement = ({ id, sX, sY, cX, cY, color, title }: IElement) => {
         const updateElement = createElement({ id, sX, sY, cX, cY, color, title });
 
-        const elementsCopy = [...drawingElements.current].map((element) => (element.id === id ? updateElement : element));
-        drawingElements.current = elementsCopy;
+        const elementsCopy = [...elements].map((element) => (element.id === id ? updateElement : element));
+        setElements(elementsCopy);
     };
 
     const nearPoint = (offsetX: number, offsetY: number, x: number, y: number, name: string, cX?: number, cY?: number) => {
@@ -225,25 +224,25 @@ function LabelingCanvas(
         if (isImageMove === true) return;
 
         if (tool === "bounding") {
-            if (actionRef.current !== "none") return;
-            actionRef.current = "drawing";
+            if (action !== "none") return;
+            setAction("drawing");
             const id = +new Date();
             const element = createElement({ id, sX: zoomPosX, sY: zoomPosY, cX: zoomPosX, cY: zoomPosY, color: category.color, title: category.title });
+            setElements((prev) => [...prev, element]);
             getSelectedElement(element);
-            drawingElements.current = [...drawingElements.current, element];
         } else if (tool === "select") {
-            const element = getElementAtPosition(zoomPosX, zoomPosY, drawingElements.current);
+            const element = getElementAtPosition(zoomPosX, zoomPosY, elements);
 
             if (element) {
                 if (element.position === "inside") {
-                    actionRef.current = "moving";
+                    setAction("moving");
                 } else {
-                    actionRef.current = "resizing";
+                    setAction("resizing");
                 }
                 getSelectedElement({ ...element, offsetX: zoomPosX, offsetY: zoomPosY });
             } else {
                 getSelectedElement(null);
-                actionRef.current = "none";
+                setAction("none");
             }
         }
         requestAnimationFrame(draw);
@@ -253,25 +252,30 @@ function LabelingCanvas(
         const { offsetX, offsetY } = e.nativeEvent;
         currentMousePos.current = { x: offsetX, y: offsetY };
 
+        if (tool === "move" || tool === "bounding") {
+            highlightBox(undefined);
+        }
+
         if (isImageMove === false) {
             if (tool === "bounding") {
-                if (actionRef.current === "drawing") {
-                    if (!drawingElements.current) return;
-                    const index = drawingElements.current.length - 1;
-                    const { id, sX, sY, color, title } = drawingElements.current[index];
+                highlightBox(undefined);
+                if (action === "drawing") {
+                    if (!elements) return;
+                    const index = elements.length - 1;
+                    const { id, sX, sY, color, title } = elements[index];
                     updateElement({ id, sX, sY, cX: zoomPosX, cY: zoomPosY, color, title });
                 }
             } else if (tool === "select") {
-                const element = getElementAtPosition(zoomPosX, zoomPosY, drawingElements.current);
+                const element = getElementAtPosition(zoomPosX, zoomPosY, elements);
                 highlightBox(element);
-                if (actionRef.current === "none") {
+                if (action === "none") {
                     if (element) {
                         if (!element.position) return;
                         mouseCursorStyle(element ? cursorForPosition(element.position) : "default");
                     } else {
                         mouseCursorStyle("default");
                     }
-                } else if (actionRef.current === "moving") {
+                } else if (action === "moving") {
                     if (!selectedElement) return;
                     const { id, sX, sY, cX, cY, offsetX, offsetY, color, title } = selectedElement;
 
@@ -294,7 +298,7 @@ function LabelingCanvas(
                     }
 
                     updateElement({ id, sX: newX, sY: newY, cX: newX + width, cY: newY + height, color, title });
-                } else if (actionRef.current === "resizing") {
+                } else if (action === "resizing") {
                     if (!selectedElement) return;
                     const { position, offsetX, offsetY, ...coordinates } = selectedElement;
                     if (!position) return;
@@ -309,27 +313,26 @@ function LabelingCanvas(
 
     const labelingMouseUp = (zoomPosX: number, zoomPosY: number) => {
         if (tool === "bounding") {
-            const index = drawingElements.current.length - 1;
+            const index = elements.length - 1;
             if (index < 0) return;
-            const { id, sX, sY, cX, cY, color, title } = adjustElementCoordinates(drawingElements.current[index]);
+            const { id, sX, sY, cX, cY, color, title } = adjustElementCoordinates(elements[index]);
             if (Math.abs(sX - cX) < 5 || Math.abs(sY - cY) < 5) return; // Add the box drawing clicking feature
             updateElement({ id, sX, sY, cX, cY, color, title });
         } else if (tool === "select") {
             if (selectedElement) {
-                if (actionRef.current === "resizing") {
-                    const element = drawingElements.current.find((element) => element.id === selectedElement.id);
+                if (action === "resizing") {
+                    const element = elements.find((element) => element.id === selectedElement.id);
                     if (!element) return;
                     const { id, sX, sY, cX, cY, color, title } = adjustElementCoordinates(element);
                     updateElement({ id, sX, sY, cX, cY, color, title });
                 }
-                const updateSelectedElement = [...drawingElements.current].find((element) => element.id === selectedElement.id);
+                const updateSelectedElement = [...elements].find((element) => element.id === selectedElement.id);
                 if (updateSelectedElement) {
                     getSelectedElement(updateSelectedElement);
                 }
             }
         }
-        getElements(drawingElements.current);
-        actionRef.current = "none";
+        setAction("none");
         requestAnimationFrame(draw);
     };
 
@@ -338,14 +341,8 @@ function LabelingCanvas(
     };
 
     useEffect(() => {
-        if (tool === "bounding" && actionRef.current === "none") {
-            getSelectedElement(null);
-            highlightBox(undefined);
-        } else if (tool === "move") {
-            highlightBox(undefined);
-        }
         draw();
-    }, [tool, getSelectedElement, draw, highlightBox]);
+    }, [tool, draw]);
 
     useImperativeHandle(ref, () => ({
         labelingMouseDown,
