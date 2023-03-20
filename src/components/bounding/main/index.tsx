@@ -98,7 +98,7 @@ function Main() {
         setReset((prev) => !prev);
     }, []);
 
-    const getSelectedElement = useCallback((element: ISelectedElement | null) => {
+    const setElementHandler = useCallback((element: ISelectedElement | null) => {
         setSelectedElement(element);
     }, []);
 
@@ -153,7 +153,7 @@ function Main() {
                 getDrawFn={getDrawFn}
                 setElements={setElements}
                 selectedElement={selectedElement}
-                getSelectedElement={getSelectedElement}
+                setElementHandler={setElementHandler}
                 categoryList={categoryList}
                 hoveredBoxId={hoveredBoxId}
                 highlightBox={highlightBox}
@@ -161,7 +161,7 @@ function Main() {
             <RightBar
                 elements={elements}
                 selectedElement={selectedElement}
-                getSelectedElement={getSelectedElement}
+                setElementHandler={setElementHandler}
                 hoveredBoxId={hoveredBoxId}
                 highlightBox={highlightBox}
                 onToolChange={handleToolChange}

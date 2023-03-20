@@ -11,7 +11,7 @@ interface Props {
     tool: Tool;
     setElements: Dispatch<SetStateAction<IElement[]>>;
     selectedElement: ISelectedElement | null;
-    getSelectedElement: (element: ISelectedElement | null) => void;
+    setElementHandler: (element: ISelectedElement | null) => void;
     imageInfo: IImageInfo | null;
     mouseCursorStyle: (name: string) => void;
     isImageMove: boolean;
@@ -29,7 +29,7 @@ function LabelingCanvas(
         scaleRef,
         tool,
         selectedElement,
-        getSelectedElement,
+        setElementHandler,
         imageInfo,
         mouseCursorStyle,
         isImageMove,
@@ -230,7 +230,7 @@ function LabelingCanvas(
             const id = +new Date();
             const element = createElement(id, zoomPosX, zoomPosY, zoomPosX, zoomPosY);
             setElements((prev) => [...prev, element]);
-            getSelectedElement(element);
+            setElementHandler(element);
         } else if (tool === "select") {
             const element = getElementAtPosition(zoomPosX, zoomPosY, elements);
 
@@ -240,9 +240,9 @@ function LabelingCanvas(
                 } else {
                     setAction("resizing");
                 }
-                getSelectedElement({ ...element, offsetX: zoomPosX, offsetY: zoomPosY });
+                setElementHandler({ ...element, offsetX: zoomPosX, offsetY: zoomPosY });
             } else {
-                getSelectedElement(null);
+                setElementHandler(null);
                 setAction("none");
             }
         }
@@ -311,7 +311,7 @@ function LabelingCanvas(
         requestAnimationFrame(draw);
     };
 
-    const labelingMouseUp = (zoomPosX: number, zoomPosY: number) => {
+    const labelingMouseUp = () => {
         if (tool === "bounding") {
             const index = elements.length - 1;
             if (index < 0) return;
@@ -328,7 +328,7 @@ function LabelingCanvas(
                 }
                 const updateSelectedElement = [...elements].find((element) => element.id === selectedElement.id);
                 if (updateSelectedElement) {
-                    getSelectedElement(updateSelectedElement);
+                    setElementHandler(updateSelectedElement);
                 }
             }
         }
@@ -350,18 +350,18 @@ function LabelingCanvas(
                 const id = elements[elements.length - 1].id;
                 if (e.code === "Escape") {
                     setElements((elements) => elements.filter((element) => element.id !== id));
-                    getSelectedElement(null);
+                    setElementHandler(null);
                     setAction("none");
                 }
             } else {
-                getSelectedElement(null);
+                setElementHandler(null);
             }
         };
         document.addEventListener("keydown", handleCancel);
         return () => {
             document.removeEventListener("keydown", handleCancel);
         };
-    }, [action, getSelectedElement, setElements, elements]);
+    }, [action, setElementHandler, setElements, elements]);
 
     useImperativeHandle(ref, () => ({
         labelingMouseDown,

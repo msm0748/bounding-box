@@ -7,7 +7,7 @@ interface Props {
     elements: IElement[];
     selectedElement: ISelectedElement | null;
     hoveredBoxId: number | undefined;
-    getSelectedElement: (element: ISelectedElement | null) => void;
+    setElementHandler: (element: ISelectedElement | null) => void;
     highlightBox: (element: ISelectedElement | undefined) => void;
     onToolChange: (newTool: Tool) => void;
     categoryList: ICategory[];
@@ -23,7 +23,7 @@ function RightBar({
     elements,
     selectedElement,
     hoveredBoxId,
-    getSelectedElement,
+    setElementHandler,
     highlightBox,
     onToolChange,
     categoryList,
@@ -44,13 +44,13 @@ function RightBar({
         const { title, color } = element;
         setCategory({ title, color });
         onToolChange("select");
-        getSelectedElement(element);
+        setElementHandler(element);
     };
 
     const handleDeleteElement = (e: React.MouseEvent, id: number) => {
         e.stopPropagation();
         setElements((elements) => elements.filter((element) => element.id !== id));
-        getSelectedElement(null);
+        setElementHandler(null);
     };
 
     const calculateOriginalPosition = (x: number, y: number) => {
@@ -63,7 +63,7 @@ function RightBar({
 
     const handleSubmit = () => {
         setElements([]);
-        getSelectedElement(null);
+        setElementHandler(null);
         setIsReset();
         const result = elements.map(({ id, sX, sY, cX, cY, title }) => ({
             id: id,

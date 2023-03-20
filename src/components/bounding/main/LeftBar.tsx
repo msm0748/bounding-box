@@ -155,19 +155,6 @@ function LeftBar({ tool, onToolChange, setIsReset, scaleRef, handleZoom, canvasS
 
                 <StyledLine />
 
-                <Tooltip text="선택한 라벨로 이동하기 Shift + 2">
-                    <Button {...buttonProps}>
-                        <svg width="24" height="24" fill="rgba(26,26,26,0.8)" xmlns="http://www.w3.org/2000/svg" fillOpacity="1" viewBox="0 0 96 96">
-                            <path
-                                fillRule="evenodd"
-                                clipRule="evenodd"
-                                d="M48 8a3 3 0 0 1 3 3v1h26a7 7 0 0 1 7 7v26h1a3 3 0 1 1 0 6h-1v26a7 7 0 0 1-7 7H51v1a3 3 0 1 1-6 0v-1H19a7 7 0 0 1-7-7V51h-1a3 3 0 1 1 0-6h1V19a7 7 0 0 1 7-7h26v-1a3 3 0 0 1 3-3Zm-3 10H19a1 1 0 0 0-1 1v26h27V18Zm0 33H18v26a1 1 0 0 0 1 1h26V51Zm6 27V51h27v26a1 1 0 0 1-1 1H51Zm27-33H51V18h26a1 1 0 0 1 1 1v26Z"
-                                fill="current"
-                                fillOpacity="current"
-                            ></path>
-                        </svg>
-                    </Button>
-                </Tooltip>
                 <Tooltip text="화면 기본 크기 Shift + 1">
                     <Button onClick={setIsReset} {...buttonProps}>
                         <svg width="24" height="24" fill="rgba(26,26,26,0.8)" fillOpacity="1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">

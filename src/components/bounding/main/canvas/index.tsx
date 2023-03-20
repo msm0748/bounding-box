@@ -20,7 +20,7 @@ interface Props {
     setElements: Dispatch<SetStateAction<IElement[]>>;
     getDrawFn: (fn: () => void) => void;
     selectedElement: ISelectedElement | null;
-    getSelectedElement: (element: ISelectedElement | null) => void;
+    setElementHandler: (element: ISelectedElement | null) => void;
     categoryList: ICategory[];
     hoveredBoxId: number | undefined;
     highlightBox: (element: ISelectedElement | undefined) => void;
@@ -41,7 +41,7 @@ function Canvas({
     getDrawFn,
     setElements,
     selectedElement,
-    getSelectedElement,
+    setElementHandler,
     categoryList,
     hoveredBoxId,
     highlightBox,
@@ -119,8 +119,7 @@ function Canvas({
         }
     };
 
-    const handleMouseUp = (e: React.MouseEvent) => {
-        const { offsetX, offsetY } = e.nativeEvent;
+    const handleMouseUp = () => {
         if (handleImageCanvasRef.current) {
             handleImageCanvasRef.current.zoomMouseUp();
         }
@@ -128,10 +127,8 @@ function Canvas({
 
         if (isImageMove === true) return;
 
-        const { zoomPosX, zoomPosY } = getZoomMousePosition(offsetX, offsetY);
-
         if (handleLabelingCanvasRef.current) {
-            handleLabelingCanvasRef.current.labelingMouseUp(zoomPosX, zoomPosY);
+            handleLabelingCanvasRef.current.labelingMouseUp();
         }
     };
 
@@ -247,7 +244,7 @@ function Canvas({
                         tool={tool}
                         setElements={setElements}
                         selectedElement={selectedElement}
-                        getSelectedElement={getSelectedElement}
+                        setElementHandler={setElementHandler}
                         imageInfo={imageInfo}
                         mouseCursorStyle={mouseCursorStyle}
                         isImageMove={isImageMove}
