@@ -344,6 +344,25 @@ function LabelingCanvas(
         draw();
     }, [tool, draw]);
 
+    useEffect(() => {
+        const handleCancel = (e: KeyboardEvent) => {
+            if (action === "drawing") {
+                const id = elements[elements.length - 1].id;
+                if (e.code === "Escape") {
+                    setElements((elements) => elements.filter((element) => element.id !== id));
+                    getSelectedElement(null);
+                    setAction("none");
+                }
+            } else {
+                getSelectedElement(null);
+            }
+        };
+        document.addEventListener("keydown", handleCancel);
+        return () => {
+            document.removeEventListener("keydown", handleCancel);
+        };
+    }, [action, getSelectedElement, setElements, elements]);
+
     useImperativeHandle(ref, () => ({
         labelingMouseDown,
         labelingMouseMove,

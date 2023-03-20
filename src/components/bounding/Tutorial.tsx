@@ -114,6 +114,12 @@ function Tutorial({ isShowTutorial, handleTutorialToggle }: Props) {
                                     <td>화면 기본 크기</td>
                                     <td>Shift + 1</td>
                                 </tr>
+                                <tr>
+                                    <td>작업취소</td>
+                                    <td>ESC</td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
                             </tbody>
                         </StyledTable>
                     </StyledContainer>
