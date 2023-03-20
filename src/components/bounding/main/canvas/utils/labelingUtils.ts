@@ -1,3 +1,17 @@
+export const drawLine = (ctx: CanvasRenderingContext2D, x: number, y: number, startX: number, startY: number, width: number, height: number) => {
+    ctx.beginPath();
+    ctx.moveTo(startX, y);
+    ctx.lineTo(width, y);
+    ctx.stroke();
+    ctx.closePath();
+
+    ctx.beginPath();
+    ctx.moveTo(x, startY);
+    ctx.lineTo(x, height);
+    ctx.stroke();
+    ctx.closePath();
+};
+
 export const cursorForPosition = (position: string) => {
     switch (position) {
         case "tl":
@@ -53,8 +67,8 @@ export const resizedCoordinates = (zoomPosX: number, zoomPosY: number, position:
     }
 };
 
-export const measurePaddingBoxSize = (ctx: CanvasRenderingContext2D, sX: number, sY: number, cX: number, cY: number) => {
-    ctx.setLineDash([5, 5]);
+export const measurePaddingBoxSize = (ctx: CanvasRenderingContext2D, sX: number, sY: number, cX: number, cY: number, scale: number) => {
+    ctx.setLineDash([5 / scale, 5 / scale]);
     const width = Math.abs(cX - sX);
     const height = Math.abs(cY - sY);
     const cutLineX = width - width * 0.95;

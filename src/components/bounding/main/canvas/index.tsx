@@ -115,7 +115,7 @@ function Canvas({
         const { zoomPosX, zoomPosY } = getZoomMousePosition(offsetX, offsetY);
 
         if (handleLabelingCanvasRef.current) {
-            handleLabelingCanvasRef.current.labelingMouseMove(e, zoomPosX, zoomPosY);
+            handleLabelingCanvasRef.current.labelingMouseMove(zoomPosX, zoomPosY);
         }
     };
 
@@ -144,7 +144,7 @@ function Canvas({
             handleImageCanvasRef.current.zoomWheel(e);
         }
         if (handleLabelingCanvasRef.current) {
-            handleLabelingCanvasRef.current.labelingWheel(e);
+            handleLabelingCanvasRef.current.labelingWheel();
         }
     };
 
