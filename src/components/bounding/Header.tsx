@@ -1,11 +1,15 @@
 import styled from "styled-components";
 import Button from "../common/button";
 
-function Header() {
+interface Props {
+    handleTutorialToggle: () => void;
+}
+
+function Header({ handleTutorialToggle }: Props) {
     return (
         <header>
             <StyledWrapper>
-                <Button width={40} height={40} hoverBg="rgba(0, 0, 0, 0.08)">
+                <Button width={40} height={40} hoverBg="rgba(0, 0, 0, 0.08)" onClick={handleTutorialToggle}>
                     <svg width="24" height="24" fill="rgba(26,26,26,0.8)" xmlns="http://www.w3.org/2000/svg" fillOpacity="1" viewBox="0 0 96 96">
                         <path
                             fillRule="evenodd"
