@@ -35,6 +35,7 @@ function RightBar({
     imageInfo,
 }: Props) {
     const [category, setCategory] = useState<ICategory>(categoryList[0]);
+    const disabled = elements.length > 0 ? false : true;
 
     const onChangeCategory = (selectedCategory: ICategory) => {
         setCategory(selectedCategory);
@@ -61,17 +62,38 @@ function RightBar({
         return [calculateOriginalPosX, calculateOriginalPosY];
     };
 
-    const handleSubmit = () => {
-        setElements([]);
-        setElementHandler(null);
-        setIsReset();
+    const resultElements = () => {
+        if (!imageInfo) return;
+        const imageSrc = imageInfo.src;
+        const imageWidth = imageInfo.originalImageSize.width;
+        const imageHeight = imageInfo.originalImageSize.height;
         const result = elements.map(({ id, sX, sY, cX, cY, title }) => ({
             id: id,
             label: title,
             points: [calculateOriginalPosition(sX, sY), calculateOriginalPosition(cX, cY)],
             type: "rectangle",
         }));
-        console.log(result);
+
+        return { result, imageSrc, imageWidth, imageHeight };
+    };
+
+    const handleDownload = () => {
+        const data = resultElements();
+        const json = JSON.stringify(data);
+        const filename = "data.json";
+
+        const link = document.createElement("a");
+        link.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(json));
+        link.setAttribute("download", filename);
+        link.click();
+    };
+
+    const handleSubmit = () => {
+        if (!imageInfo) return;
+        setElements([]);
+        setElementHandler(null);
+        setIsReset();
+
         if (imageIndex < imageList.length - 1) {
             setImageIndex((prev) => prev + 1);
         } else {
@@ -157,7 +179,12 @@ function RightBar({
             </div>
             <div>
                 <StyledSubmitWrap>
-                    <StyledSubmitBtn onClick={handleSubmit}>제출하기</StyledSubmitBtn>
+                    <StyledSubmitBtn onClick={handleDownload} disabled={disabled}>
+                        다운로드
+                    </StyledSubmitBtn>
+                    <StyledSubmitBtn onClick={handleSubmit} disabled={disabled}>
+                        제출하기
+                    </StyledSubmitBtn>
                 </StyledSubmitWrap>
             </div>
         </StyledWrap>
@@ -216,8 +243,10 @@ const StyledSubmitWrap = styled.div`
     padding: 16px;
 `;
 
-const StyledSubmitBtn = styled.button`
-    background: rgb(26, 26, 26);
+const StyledSubmitBtn = styled.button<{ disabled: boolean }>`
+    margin: 5px 0;
+    cursor: ${({ disabled }) => disabled && "not-allowed"};
+    background: ${({ disabled }) => (disabled ? "rgb(197, 197, 197)" : "rgb(26, 26, 26)")};
     border-radius: 4px;
     width: 100%;
     height: 56px;

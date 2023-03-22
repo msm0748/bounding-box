@@ -71,7 +71,12 @@ function Tutorial({ isShowTutorial, handleTutorialToggle }: Props) {
                             </li>
                         </StyledList>
 
-                        <StyledH3>4. 제출하기</StyledH3>
+                        <StyledH3>4. 다운로드</StyledH3>
+                        <StyledList>
+                            <li>· 완성된 라벨은 오른쪽 아래 [다운로드]를 눌러 json 파일 형식으로 결과값을 다운받을 수 있습니다.</li>
+                        </StyledList>
+
+                        <StyledH3>5. 제출하기</StyledH3>
                         <StyledList>
                             <li>· 완성된 라벨은 오른쪽 아래 [제출하기]를 눌러 제출합니다.</li>
                         </StyledList>
