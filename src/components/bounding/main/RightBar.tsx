@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
 import ColorPoint from "../../common/category/ColorPoint";
 import DropDown from "../../common/category";
@@ -37,9 +37,9 @@ function RightBar({
     const [category, setCategory] = useState<ICategory>(categoryList[0]);
     const disabled = elements.length > 0 ? false : true;
 
-    const onChangeCategory = (selectedCategory: ICategory) => {
+    const onChangeCategory = useCallback((selectedCategory: ICategory) => {
         setCategory(selectedCategory);
-    };
+    }, []);
 
     const handleActive = (element: IElement) => {
         const { title, color } = element;
@@ -48,21 +48,27 @@ function RightBar({
         setElementHandler(element);
     };
 
-    const handleDeleteElement = (e: React.MouseEvent, id: number) => {
-        e.stopPropagation();
-        setElements((elements) => elements.filter((element) => element.id !== id));
-        setElementHandler(null);
-    };
+    const handleDeleteElement = useCallback(
+        (e: React.MouseEvent, id: number) => {
+            e.stopPropagation();
+            setElements((elements) => elements.filter((element) => element.id !== id));
+            setElementHandler(null);
+        },
+        [setElementHandler, setElements]
+    );
 
-    const calculateOriginalPosition = (x: number, y: number) => {
-        if (!imageInfo) return;
-        const calculateOriginalPosX = (imageInfo.originalImageSize.width / imageInfo.width) * x;
-        const calculateOriginalPosY = (imageInfo.originalImageSize.height / imageInfo.height) * (y - imageInfo.y);
+    const calculateOriginalPosition = useCallback(
+        (x: number, y: number) => {
+            if (!imageInfo) return;
+            const calculateOriginalPosX = (imageInfo.originalImageSize.width / imageInfo.width) * x;
+            const calculateOriginalPosY = (imageInfo.originalImageSize.height / imageInfo.height) * (y - imageInfo.y);
 
-        return [calculateOriginalPosX, calculateOriginalPosY];
-    };
+            return [calculateOriginalPosX, calculateOriginalPosY];
+        },
+        [imageInfo]
+    );
 
-    const resultElements = () => {
+    const resultElements = useCallback(() => {
         if (!imageInfo) return;
         const imageSrc = imageInfo.src;
         const imageWidth = imageInfo.originalImageSize.width;
@@ -75,9 +81,9 @@ function RightBar({
         }));
 
         return { result, imageSrc, imageWidth, imageHeight };
-    };
+    }, [calculateOriginalPosition, elements, imageInfo]);
 
-    const handleDownload = () => {
+    const handleDownload = useCallback(() => {
         const data = resultElements();
         const json = JSON.stringify(data);
         const filename = "data.json";
@@ -86,9 +92,9 @@ function RightBar({
         link.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(json));
         link.setAttribute("download", filename);
         link.click();
-    };
+    }, [resultElements]);
 
-    const handleSubmit = () => {
+    const handleSubmit = useCallback(() => {
         if (!imageInfo) return;
         setElements([]);
         setElementHandler(null);
@@ -100,7 +106,7 @@ function RightBar({
             alert("더 이상 가져올 이미지가 없습니다.");
             setImageIndex(0);
         }
-    };
+    }, [imageIndex, imageInfo, imageList.length, setElementHandler, setElements, setImageIndex, setIsReset]);
 
     useEffect(() => {
         if (!selectedElement) return;

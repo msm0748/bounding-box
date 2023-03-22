@@ -1,4 +1,4 @@
-import { useRef, forwardRef, useEffect, useImperativeHandle, MutableRefObject } from "react";
+import { useRef, forwardRef, useEffect, useImperativeHandle, MutableRefObject, memo } from "react";
 import styled from "styled-components";
 
 interface Props {
@@ -102,7 +102,7 @@ function ImageCanvas(
 
     return <StyledCanvas ref={canvasRef}></StyledCanvas>;
 }
-export default forwardRef(ImageCanvas);
+export default memo(forwardRef(ImageCanvas));
 
 const StyledCanvas = styled.canvas`
     position: absolute;

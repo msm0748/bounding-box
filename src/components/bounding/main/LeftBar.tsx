@@ -1,4 +1,4 @@
-import { useEffect, MutableRefObject, useCallback } from "react";
+import { useEffect, MutableRefObject, useCallback, memo } from "react";
 import styled from "styled-components";
 import Button from "../../common/button";
 import Tooltip from "../../common/tooltip";
@@ -171,7 +171,7 @@ function LeftBar({ tool, onToolChange, setIsReset, scaleRef, handleZoom, canvasS
     );
 }
 
-export default LeftBar;
+export default memo(LeftBar);
 
 const StyledWrapper = styled.div`
     display: flex;

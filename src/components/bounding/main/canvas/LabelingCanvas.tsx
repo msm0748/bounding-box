@@ -162,44 +162,50 @@ function LabelingCanvas(
         setElements(elementsCopy);
     };
 
-    const nearPoint = (offsetX: number, offsetY: number, x: number, y: number, name: string, cX?: number, cY?: number) => {
-        const resizePoint = resizePointRef.current / scaleRef.current;
-        if (cX && cY) {
-            switch (name) {
-                case "t":
-                case "b":
-                    return x < offsetX && cX > offsetX && Math.abs(offsetY - y) < resizePoint ? name : null;
-                case "l":
-                case "r":
-                    return y < offsetY && cY > offsetY && Math.abs(offsetX - x) < resizePoint ? name : null;
+    const nearPoint = useCallback(
+        (offsetX: number, offsetY: number, x: number, y: number, name: string, cX?: number, cY?: number) => {
+            const resizePoint = resizePointRef.current / scaleRef.current;
+            if (cX && cY) {
+                switch (name) {
+                    case "t":
+                    case "b":
+                        return x < offsetX && cX > offsetX && Math.abs(offsetY - y) < resizePoint ? name : null;
+                    case "l":
+                    case "r":
+                        return y < offsetY && cY > offsetY && Math.abs(offsetX - x) < resizePoint ? name : null;
+                }
+            } else {
+                return Math.abs(offsetX - x) < resizePoint && Math.abs(offsetY - y) < resizePoint ? name : null;
             }
-        } else {
-            return Math.abs(offsetX - x) < resizePoint && Math.abs(offsetY - y) < resizePoint ? name : null;
-        }
-    };
+        },
+        [scaleRef]
+    );
 
-    const positionWithinElement = (x: number, y: number, element: IElement) => {
-        const { id, sX, sY, cX, cY } = element;
-        const topLeft = nearPoint(x, y, sX, sY, "tl");
-        const topRight = nearPoint(x, y, cX, sY, "tr");
-        const bottomLeft = nearPoint(x, y, sX, cY, "bl");
-        const bottomRight = nearPoint(x, y, cX, cY, "br");
+    const positionWithinElement = useCallback(
+        (x: number, y: number, element: IElement) => {
+            const { id, sX, sY, cX, cY } = element;
+            const topLeft = nearPoint(x, y, sX, sY, "tl");
+            const topRight = nearPoint(x, y, cX, sY, "tr");
+            const bottomLeft = nearPoint(x, y, sX, cY, "bl");
+            const bottomRight = nearPoint(x, y, cX, cY, "br");
 
-        const top = nearPoint(x, y, sX, sY, "t", cX, cY);
-        const bottom = nearPoint(x, y, sX, cY, "b", cX, cY);
-        const right = nearPoint(x, y, cX, sY, "r", cX, cY);
-        const left = nearPoint(x, y, sX, sY, "l", cX, cY);
+            const top = nearPoint(x, y, sX, sY, "t", cX, cY);
+            const bottom = nearPoint(x, y, sX, cY, "b", cX, cY);
+            const right = nearPoint(x, y, cX, sY, "r", cX, cY);
+            const left = nearPoint(x, y, sX, sY, "l", cX, cY);
 
-        const inside = x >= sX && x <= cX && y >= sY && y <= cY ? "inside" : null;
+            const inside = x >= sX && x <= cX && y >= sY && y <= cY ? "inside" : null;
 
-        if (selectedElement) {
-            if (id === selectedElement.id) {
-                return topLeft || topRight || bottomLeft || bottomRight || top || right || bottom || left || inside;
+            if (selectedElement) {
+                if (id === selectedElement.id) {
+                    return topLeft || topRight || bottomLeft || bottomRight || top || right || bottom || left || inside;
+                }
             }
-        }
 
-        return inside;
-    };
+            return inside;
+        },
+        [nearPoint, selectedElement]
+    );
 
     const getElementAtPosition = (zoomPosX: number, zoomPosY: number, elements: IElement[]) => {
         let elementsCopy = [...elements];
