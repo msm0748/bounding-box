@@ -20,11 +20,11 @@ function Tutorial({ isShowTutorial, handleTutorialToggle }: Props) {
             <Transition in={isShowTutorial} timeout={300} unmountOnExit nodeRef={tutorialRef}>
                 {(state) => (
                     <StyledContainer state={state} ref={tutorialRef}>
-                        <StyledH1>데이터 라벨링이란?</StyledH1>
+                        <StyledH1>바운딩 박스</StyledH1>
                         <StyledP>
-                            사람이 만든 사진, 문서 등의 데이터를 인공지능(AI)이 학습할 수 있는 형태로 가공하는 것입니다. 데이터 라벨링의 예시로는 강아지 사진과
-                            동영상에 ‘강아지’라는 라벨을 붙이는 것이 있습니다. 라벨링을 통해 학습한 인공지능은 다음에 유사한 형태의 이미지를 강아지로 구분할 수
-                            있게 됩니다.
+                            데이터 라벨링은 인공지능이 학습할 수 있는 형태로 데이터를 가공하는 것입니다. 그중 객체 검출에서 가장 흔하게 사용되는 라벨링 방법 중
+                            하나가 바운딩 박스입니다. 바운딩 박스는 객체 주변에 사각형 모양의 박스를 그리는 것으로, 이를 통해 인공지능은 사진 속에서 어떤 객체가
+                            어디에 있는지 인식할 수 있게 됩니다.
                         </StyledP>
                         <StyledH2>진행 방법</StyledH2>
                         <StyledH3>1. 박스 그리기</StyledH3>
@@ -150,7 +150,7 @@ const StyledWrap = styled.div<{ state: TransitionStatus }>`
 
 const StyledContainer = styled.div<{ state: TransitionStatus }>`
     width: calc(100% - 320px);
-    max-width: 800px;
+    max-width: 900px;
     padding: 0 24px 40px;
     overflow: auto;
     height: calc(100% - 48px);
@@ -195,6 +195,7 @@ const StyledList = styled.ul`
 `;
 
 const StyledP = styled.p`
+    font-size: 18px;
     line-height: 22px;
     word-break: keep-all;
 `;
