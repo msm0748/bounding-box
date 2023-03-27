@@ -32,7 +32,7 @@ function ImageCanvas(
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
-        ctx.clearRect(0, 0, canvasSize.width, canvasSize.height);
+        canvas.width = canvasSize.width;
         ctx.setTransform(scaleRef.current, 0, 0, scaleRef.current, viewPosRef.current.x, viewPosRef.current.y);
         if (!imageInfo) return;
         ctx.drawImage(imageRef.current, imageInfo.x, imageInfo.y, imageInfo.width, imageInfo.height);
