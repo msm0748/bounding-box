@@ -1,4 +1,4 @@
-import { useRef, useState, forwardRef, useImperativeHandle, MutableRefObject, useEffect, useCallback, Dispatch, SetStateAction } from "react";
+import { useRef, useState, forwardRef, useImperativeHandle, MutableRefObject, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import { drawLine, cursorForPosition, adjustElementCoordinates, resizedCoordinates, measurePaddingBoxSize, clamp } from "./utils/labelingUtils";
 import { INITIAL_POSITION } from "../defaults";
@@ -9,7 +9,7 @@ interface Props {
     viewPosRef: MutableRefObject<IPosition>;
     scaleRef: MutableRefObject<number>;
     tool: Tool;
-    setElements: Dispatch<SetStateAction<IElement[]>>;
+    setElements: (action: IElement[] | ((prevState: IElement[]) => IElement[]), overwrite?: boolean | undefined) => void;
     selectedElement: ISelectedElement | null;
     setElementHandler: (element: ISelectedElement | null) => void;
     imageInfo: IImageInfo | null;
@@ -159,7 +159,7 @@ function LabelingCanvas(
         const updateElement = createElement(id, sX, sY, cX, cY, color, title);
 
         const elementsCopy = [...elements].map((element) => (element.id === id ? updateElement : element));
-        setElements(elementsCopy);
+        setElements(elementsCopy, true);
     };
 
     const nearPoint = useCallback(
@@ -239,8 +239,8 @@ function LabelingCanvas(
             setElementHandler(element);
         } else if (tool === "select") {
             const element = getElementAtPosition(zoomPosX, zoomPosY, elements);
-
             if (element) {
+                setElements((prev) => prev);
                 if (element.position === "inside") {
                     setAction("moving");
                 } else {
@@ -352,15 +352,15 @@ function LabelingCanvas(
 
     useEffect(() => {
         const handleCancel = (e: KeyboardEvent) => {
-            if (action === "drawing") {
-                const id = elements[elements.length - 1].id;
-                if (e.code === "Escape") {
+            if (e.code === "Escape") {
+                if (action === "drawing") {
+                    const id = elements[elements.length - 1].id;
                     setElements((elements) => elements.filter((element) => element.id !== id));
                     setElementHandler(null);
                     setAction("none");
+                } else {
+                    setElementHandler(null);
                 }
-            } else {
-                setElementHandler(null);
             }
         };
         document.addEventListener("keydown", handleCancel);

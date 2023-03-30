@@ -21,6 +21,34 @@ const categoryList = [
 
 const imageList = [test1, test2, test3];
 
+const useHistory = (
+    initialState: IElement[]
+): [IElement[], (action: IElement[] | ((prevState: IElement[]) => IElement[]), overwrite?: boolean) => void, () => void, () => void] => {
+    const [index, setIndex] = useState(0);
+    const [history, setHistory] = useState([initialState]);
+
+    const setState = useCallback(
+        (action: IElement[] | ((prevState: IElement[]) => IElement[]), overwrite = false) => {
+            const newState = typeof action === "function" ? action(history[index]) : action;
+            if (overwrite) {
+                const historyCopy = [...history];
+                historyCopy[index] = newState;
+                setHistory(historyCopy);
+            } else {
+                const updatedState = [...history].slice(0, index + 1);
+                setHistory([...updatedState, newState]);
+                setIndex((prevState) => prevState + 1);
+            }
+        },
+        [history, index]
+    );
+
+    const undo = () => index > 0 && setIndex((prevState) => prevState - 1);
+    const redo = () => index < history.length - 1 && setIndex((prevState) => prevState + 1);
+
+    return [history[index], setState, undo, redo];
+};
+
 function Main() {
     const drawFnRef = useRef<() => void>();
     const imageRef = useRef<HTMLImageElement>(new Image());
@@ -29,7 +57,7 @@ function Main() {
     const [reset, setReset] = useState(false);
     const scaleRef = useRef(INITIAL_SCALE);
     const viewPosRef = useRef(INITIAL_POSITION);
-    const [elements, setElements] = useState<IElement[]>([]);
+    const [elements, setElements, undo, redo] = useHistory([]);
     const [selectedElement, setSelectedElement] = useState<ISelectedElement | null>(null);
     const [imageInfo, setImageInfo] = useState<IImageInfo | null>(null);
     const [hoveredBoxId, setHoverBoxId] = useState<number | undefined>();
@@ -111,9 +139,9 @@ function Main() {
     }, []);
 
     useEffect(() => {
-        if (!selectedElement) return;
-        const { id } = selectedElement;
         const deleteElement = (e: KeyboardEvent) => {
+            if (!selectedElement) return;
+            const { id } = selectedElement;
             if (e.code === "Delete" || e.code === "Backspace") {
                 setElements((elements) => elements.filter((element) => element.id !== id));
                 setSelectedElement(null);
@@ -124,6 +152,24 @@ function Main() {
             document.removeEventListener("keydown", deleteElement);
         };
     }, [selectedElement, setElements, setSelectedElement]);
+
+    useEffect(() => {
+        const undoRedoFunction = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === "z") {
+                setSelectedElement(null);
+                if (e.shiftKey) {
+                    redo();
+                } else {
+                    undo();
+                }
+            }
+        };
+
+        document.addEventListener("keydown", undoRedoFunction);
+        return () => {
+            document.removeEventListener("keydown", undoRedoFunction);
+        };
+    }, [undo, redo]);
 
     return (
         <StyledMain>

@@ -1,10 +1,9 @@
-import { Dispatch, MutableRefObject, SetStateAction, useCallback, useEffect, useRef, useState } from "react";
+import { MutableRefObject, useCallback, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { INITIAL_POSITION } from "../defaults";
 import ImageCanvas from "./ImageCanvas";
 import LabelingCanvas from "./LabelingCanvas";
 import CategoryDropDown from "../../../common/category";
-
 interface Props {
     imageRef: MutableRefObject<HTMLImageElement>;
     reset: boolean;
@@ -17,7 +16,7 @@ interface Props {
     updateCanvasSize: ({ width, height }: ISize) => void;
     imageInfo: IImageInfo | null;
     elements: IElement[];
-    setElements: Dispatch<SetStateAction<IElement[]>>;
+    setElements: (action: IElement[] | ((prevState: IElement[]) => IElement[]), overwrite?: boolean | undefined) => void;
     getDrawFn: (fn: () => void) => void;
     selectedElement: ISelectedElement | null;
     setElementHandler: (element: ISelectedElement | null) => void;

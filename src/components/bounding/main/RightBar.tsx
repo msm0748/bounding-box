@@ -11,7 +11,7 @@ interface Props {
     highlightBox: (element: ISelectedElement | undefined) => void;
     onToolChange: (newTool: Tool) => void;
     categoryList: ICategory[];
-    setElements: Dispatch<SetStateAction<IElement[]>>;
+    setElements: (action: IElement[] | ((prevState: IElement[]) => IElement[]), overwrite?: boolean | undefined) => void;
     imageList: string[];
     imageIndex: number;
     setImageIndex: Dispatch<SetStateAction<number>>;
@@ -37,9 +37,18 @@ function RightBar({
     const [category, setCategory] = useState<ICategory>(categoryList[0]);
     const disabled = elements.length > 0 ? false : true;
 
-    const onChangeCategory = useCallback((selectedCategory: ICategory) => {
-        setCategory(selectedCategory);
-    }, []);
+    const onChangeCategory = useCallback(
+        (selectedCategory: ICategory) => {
+            setCategory(selectedCategory);
+            if (!selectedElement) return;
+            setElements((elements) =>
+                elements.map((element) =>
+                    element.id === selectedElement.id ? { ...element, color: selectedCategory.color, title: selectedCategory.title } : element
+                )
+            );
+        },
+        [selectedElement, setElements]
+    );
 
     const handleActive = (element: IElement) => {
         const { title, color } = element;
@@ -112,14 +121,6 @@ function RightBar({
         if (!selectedElement) return;
         setCategory({ title: selectedElement.title, color: selectedElement.color });
     }, [selectedElement]);
-
-    // Update elements after changing the category
-    useEffect(() => {
-        if (!selectedElement) return;
-        setElements((elements) =>
-            elements.map((element) => (element.id === selectedElement.id ? { ...element, color: category.color, title: category.title } : element))
-        );
-    }, [category, setElements, selectedElement]);
 
     return (
         <StyledWrap>
