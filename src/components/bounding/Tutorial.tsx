@@ -120,8 +120,14 @@ function Tutorial({ isShowTutorial, handleTutorialToggle }: Props) {
                                     <td>Shift + 1</td>
                                 </tr>
                                 <tr>
-                                    <td>작업취소</td>
+                                    <td>작업 취소</td>
                                     <td>ESC</td>
+                                    <td>실행 취소</td>
+                                    <td>Ctrl(Cmd) + Z</td>
+                                </tr>
+                                <tr>
+                                    <td>실행 취소 되돌리기</td>
+                                    <td>Ctrl(Cmd) + Shift + Z</td>
                                     <td></td>
                                     <td></td>
                                 </tr>
