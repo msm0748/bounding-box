@@ -36,7 +36,12 @@ const useHistory = (
                 setHistory(historyCopy);
             } else {
                 const updatedState = [...history].slice(0, index + 1);
-                setHistory([...updatedState, newState]);
+                const newHistory = [...updatedState, newState];
+                if (newHistory.length > 15) {
+                    newHistory.shift();
+                    setIndex((prevState) => prevState - 1);
+                }
+                setHistory(newHistory);
                 setIndex((prevState) => prevState + 1);
             }
         },
