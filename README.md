@@ -1,7 +1,7 @@
 # 바운딩 박스
 
 홈페이지 주소  
-<http://43.201.20.178/>
+<https://bounding-box-five.vercel.app/>
 
 ## 프로젝트 소개
 
