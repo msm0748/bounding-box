@@ -3,6 +3,9 @@
 홈페이지 주소  
 <https://bounding-box-five.vercel.app/>
 
+깃허브
+<https://github.com/msm0748/bounding-box>
+
 ## 프로젝트 소개
 
 바운딩 박스를 그리는 인터페이스를 제공하여 사용자가 객체 인식 작업을 더욱 효율적으로 수행할 수 있도록 도와줍니다.
