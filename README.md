@@ -29,7 +29,11 @@
 <br/><br/>
 
 ## 기능
-https://github.com/msm0748/bounding-box/assets/78075709/d04dd6b0-086e-4578-a6db-13762d51f830
+
+
+https://github.com/msm0748/bounding-box/assets/78075709/b738e006-867e-43c5-b0aa-bcd8a10d8780
+
+
 <br/><br/>
 
 
