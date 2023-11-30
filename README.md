@@ -30,7 +30,7 @@
 
 ## 기능
 
-![update](https://github.com/msm0748/bounding-box/assets/78075709/0775b21e-89c8-4269-bc6a-b0cdc786751b)
+![update](https://github.com/msm0748/bounding-box/assets/78075709/28463885-fa6f-44eb-9d90-f4e3f58f932a)
 
 <br/><br/>
 
