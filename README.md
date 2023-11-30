@@ -33,6 +33,10 @@
 ![bounding-box](https://user-images.githubusercontent.com/78075709/228297892-c5b5ea0f-75b4-4c2e-bc8c-40821a59aa6a.png)
 <br/><br/>
 
+
+https://github.com/msm0748/bounding-box/assets/78075709/9b929c4b-42b0-473b-b56c-22713b6707cd
+
+
 1. **바운딩 박스 그리기 기능**
     - 이미지 위에서 자신이 인식하고자 하는 객체 주위에 바운딩 박스를 그릴 수 있습니다.
 2. **바운딩 박스 수정 기능**
