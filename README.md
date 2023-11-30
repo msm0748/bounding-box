@@ -30,11 +30,9 @@
 
 ## 기능
 
-![bounding-box](https://user-images.githubusercontent.com/78075709/228297892-c5b5ea0f-75b4-4c2e-bc8c-40821a59aa6a.png)
+![update](https://github.com/msm0748/bounding-box/assets/78075709/0775b21e-89c8-4269-bc6a-b0cdc786751b)
+
 <br/><br/>
-
-
-https://github.com/msm0748/bounding-box/assets/78075709/9b929c4b-42b0-473b-b56c-22713b6707cd
 
 
 1. **바운딩 박스 그리기 기능**
