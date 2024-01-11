@@ -1,9 +1,9 @@
-import { MutableRefObject, useCallback, useEffect, useRef, useState } from "react";
-import styled from "styled-components";
-import { INITIAL_POSITION } from "../defaults";
-import ImageCanvas from "./ImageCanvas";
-import LabelingCanvas from "./LabelingCanvas";
-import CategoryDropDown from "../../../common/category";
+import { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
+import styled from 'styled-components';
+import { INITIAL_POSITION } from '../defaults';
+import ImageCanvas from './ImageCanvas';
+import LabelingCanvas from './LabelingCanvas';
+import CategoryDropDown from '../../../common/category';
 interface Props {
     imageRef: MutableRefObject<HTMLImageElement>;
     reset: boolean;
@@ -16,7 +16,10 @@ interface Props {
     updateCanvasSize: ({ width, height }: ISize) => void;
     imageInfo: IImageInfo | null;
     elements: IElement[];
-    setElements: (action: IElement[] | ((prevState: IElement[]) => IElement[]), overwrite?: boolean | undefined) => void;
+    setElements: (
+        action: IElement[] | ((prevState: IElement[]) => IElement[]),
+        overwrite?: boolean | undefined,
+    ) => void;
     getDrawFn: (fn: () => void) => void;
     selectedElement: ISelectedElement | null;
     setElementHandler: (element: ISelectedElement | null) => void;
@@ -93,7 +96,7 @@ function Canvas({
         if (handleImageCanvasRef.current) {
             handleImageCanvasRef.current.zoomMouseDown(offsetX, offsetY);
         }
-        if (isImageMove === true || tool === "move") {
+        if (isImageMove === true || tool === 'move') {
             setIsGrabbing(true);
         }
 
@@ -106,7 +109,7 @@ function Canvas({
 
     const handleMouseMove = (e: React.MouseEvent) => {
         const { offsetX, offsetY } = e.nativeEvent;
-        if (isGrabbing === true || tool === "move") {
+        if (isGrabbing === true || tool === 'move') {
             if (handleImageCanvasRef.current) {
                 handleImageCanvasRef.current.zoomMouseMove(offsetX, offsetY);
             }
@@ -151,7 +154,7 @@ function Canvas({
 
     // reset
     useEffect(() => {
-        handleZoom("reset");
+        handleZoom('reset');
         isTouchRef.current = false;
         setViewPosRef(INITIAL_POSITION);
         startPosRef.current = INITIAL_POSITION;
@@ -164,33 +167,33 @@ function Canvas({
 
     // Setting mouse cursor style
     useEffect(() => {
-        if (tool === "move" || isImageMove === true) {
-            isGrabbing === true ? mouseCursorStyle("grabbing") : mouseCursorStyle("grab");
+        if (tool === 'move' || isImageMove === true) {
+            isGrabbing === true ? mouseCursorStyle('grabbing') : mouseCursorStyle('grab');
         } else {
-            mouseCursorStyle("default");
+            mouseCursorStyle('default');
         }
     }, [tool, isImageMove, isGrabbing, mouseCursorStyle]);
 
     // Deciding whether to move an image.
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.code === "Space") {
+            if (e.code === 'Space') {
                 setIsImageMove(true);
             }
         };
 
         const handleKeyUp = (e: KeyboardEvent) => {
-            if (e.code === "Space") {
+            if (e.code === 'Space') {
                 setIsImageMove(false);
                 setIsGrabbing(false);
             }
         };
 
-        document.addEventListener("keydown", handleKeyDown);
-        document.addEventListener("keyup", handleKeyUp);
+        document.addEventListener('keydown', handleKeyDown);
+        document.addEventListener('keyup', handleKeyUp);
         return () => {
-            document.removeEventListener("keydown", handleKeyDown);
-            document.removeEventListener("keyup", handleKeyUp);
+            document.removeEventListener('keydown', handleKeyDown);
+            document.removeEventListener('keyup', handleKeyUp);
         };
     }, []);
 
@@ -203,17 +206,22 @@ function Canvas({
                 e.preventDefault();
             }
         };
-        wrapper.addEventListener("wheel", preventDefault, { passive: false });
+        wrapper.addEventListener('wheel', preventDefault, { passive: false });
         return () => {
-            wrapper.removeEventListener("wheel", preventDefault);
+            wrapper.removeEventListener('wheel', preventDefault);
         };
     }, []);
 
     return (
         <>
             <StyledWrapper ref={wrapperRef}>
-                {tool === "bounding" && (
-                    <CategoryDropDown category={category} onChangeCategory={onChangeCategory} categoryList={categoryList} isAbsolute={true} />
+                {tool === 'bounding' && (
+                    <CategoryDropDown
+                        category={category}
+                        onChangeCategory={onChangeCategory}
+                        categoryList={categoryList}
+                        isAbsolute={true}
+                    />
                 )}
                 <div
                     onMouseDown={handleMouseDown}
@@ -262,4 +270,5 @@ export default Canvas;
 const StyledWrapper = styled.div`
     position: relative;
     flex: 1;
+    z-index: 1;
 `;
